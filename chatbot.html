@@ -647,9 +647,13 @@
         // Remove last user message from history so user can retry
         chatHistory.pop();
         thinkDiv.classList.remove('thinking');
-        const errMsg = err.message?.includes('API_KEY') ? 'المفتاح مش صح — تأكد من الـ API Key 🙏' : 'في مشكلة في الاتصال... جرب تاني بعد شوية 🙏';
-        thinkDiv.innerHTML = `<div class="bot-avatar-sm">🕊️</div><div class="message-text" style="color:#f87171">${errMsg}</div>`;
-        console.error('generateResponse error:', err);
+        let errMsg = 'في مشكلة في الاتصال... جرب تاني بعد شوية 🙏';
+        if (err.message?.includes('API_KEY') || err.message?.includes('API key')) errMsg = 'المفتاح مش صح — تأكد من الـ API Key 🙏';
+        else if (err.message?.includes('quota') || err.message?.includes('QUOTA')) errMsg = 'تجاوزنا الحد المسموح... جرب بعد شوية 🙏';
+        else if (err.message?.includes('fetch') || err.message?.includes('Failed')) errMsg = 'تأكد من الاتصال بالإنترنت وجرب تاني 🙏';
+        // Show actual error for debugging - remove in production
+        thinkDiv.innerHTML = \`<div class="bot-avatar-sm">🕊️</div><div class="message-text"><span style="color:#f87171">\${errMsg}</span><br/><small style="color:#71717a;font-size:.7rem;direction:ltr;display:block;margin-top:4px">\${err.message || 'unknown error'}</small></div>\`;
+        console.error('generateResponse error:', err.message, err);
       } finally {
         userData.file = {};
         scrollBottom();
