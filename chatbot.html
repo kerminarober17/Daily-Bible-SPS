@@ -64,44 +64,13 @@ html,body{height:100%;font-family:'Cairo',sans-serif;background:var(--bg);color:
 #sb:hover{background:var(--pd)}#sb:active{transform:scale(.92)}
 #sb:disabled{background:var(--bg3);color:var(--t3);cursor:not-allowed}
 .hint{font-size:.68rem;color:var(--t3);text-align:center;margin-top:.45rem}
-/* setup overlay */
-#setup{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:999;padding:1rem}
-#setup-box{background:var(--bg2);border:1px solid var(--br);border-radius:1.2rem;padding:2rem 1.75rem;max-width:420px;width:100%;display:flex;flex-direction:column;gap:1.1rem}
-#setup-box h2{font-size:1.1rem;font-weight:800;text-align:center}
-#setup-box p{font-size:.82rem;color:var(--t2);line-height:1.7;text-align:center}
-#setup-box a{color:var(--p);text-decoration:none}
-#setup-box a:hover{text-decoration:underline}
-#key-inp{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:.6rem;padding:.65rem .9rem;color:var(--t);font-family:'Cairo',sans-serif;font-size:.85rem;outline:none;direction:ltr}
-#key-inp:focus{border-color:var(--p)}
-#key-inp::placeholder{color:var(--t3);direction:rtl}
-#key-err{font-size:.78rem;color:#f87171;display:none;text-align:center}
-#save-btn{background:var(--p);border:none;color:#fff;font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:700;padding:.7rem;border-radius:.65rem;cursor:pointer;transition:background .2s}
-#save-btn:hover{background:var(--pd)}
-.steps{background:var(--bg3);border-radius:.65rem;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.5rem}
-.step{display:flex;align-items:flex-start;gap:.6rem;font-size:.78rem;color:var(--t2);line-height:1.6}
-.step-n{background:var(--p);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:.1rem}
+
 #tst{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(70px);background:#1e1e21;border:1px solid #ef4444;color:#fca5a5;padding:.55rem 1.1rem;border-radius:2rem;font-size:.78rem;font-family:'Cairo',sans-serif;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;max-width:90vw;text-align:center}
 #tst.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:768px){.sidebar{display:none}.msg{max-width:88%}.ch{padding:.75rem 1rem}.msgs{padding:.9rem}.ia{padding:.7rem .9rem .9rem}}
 </style>
 </head>
 <body>
-
-<!-- ══ Setup Overlay ══ -->
-<div id="setup">
-  <div id="setup-box">
-    <h2>✝ Daily Bible SPS<br><span style="font-weight:400;font-size:.9rem;color:var(--t2)">المساعد الروحي</span></h2>
-    <div class="steps">
-      <div class="step"><div class="step-n">1</div><span>روح على <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></span></div>
-      <div class="step"><div class="step-n">2</div><span>اضغط <b>Create API Key</b> وكوبي الـ Key</span></div>
-      <div class="step"><div class="step-n">3</div><span>الصقه هنا واضغط ابدأ</span></div>
-    </div>
-    <input id="key-inp" type="text" placeholder="الصق الـ API Key هنا  (AIzaSy...)" autocomplete="off" spellcheck="false">
-    <div id="key-err">⚠️ الـ Key غلط — لازم يبدأ بـ AIza</div>
-    <button id="save-btn" onclick="saveKey()">ابدأ المحادثة ✨</button>
-    <p style="font-size:.72rem">الـ Key بيتحفظ في المتصفح بتاعك بس ومش بيتبعت لأي حد 🔒</p>
-  </div>
-</div>
 
 <div id="tst"></div>
 <div class="app">
@@ -130,7 +99,7 @@ html,body{height:100%;font-family:'Cairo',sans-serif;background:var(--bg);color:
           <button class="mb" onclick="pm(this,'محتاج دعاء')">🙏</button>
         </div>
       </div>
-      <button class="qb" style="margin-top:.5rem;color:var(--t3)" onclick="resetKey()"><i class="fa-solid fa-key"></i> تغيير الـ API Key</button>
+
     </div>
   </aside>
 
@@ -167,30 +136,11 @@ html,body{height:100%;font-family:'Cairo',sans-serif;background:var(--bg);color:
 <script>
 const SYS = 'أنت مساعد روحي وداعم لمنصة Daily Bible SPS. ترد بالعربي المصري البسيط والودود. ردودك قصيرة وطبيعية وإنسانية. لو المستخدم حزين واسيه، لو مضغوط هدّيه، لو سأل عن آية اقترحلوا آية مناسبة. مش بتدي فتاوى. لو الموضوع محتاج كاهن قوله: ممكن تسأل أب اعترافك. لو اقترحت آية اكتبها في النهاية بالصيغة: [VERSE:المرجع:نص الآية]';
 
-let conv=[], busy=false, API_KEY='';
+// ══ ضع الـ API Key هنا ══
+const API_KEY = 'AIzaSyCWpC_xqTGsloDeOUPNg00-c6a47YPIWwk';
+// ═══════════════════════
 
-// ── Key management ──
-function loadKey(){
-  API_KEY = localStorage.getItem('gk') || '';
-  if(API_KEY) document.getElementById('setup').style.display='none';
-}
-function saveKey(){
-  const v = document.getElementById('key-inp').value.trim();
-  const err = document.getElementById('key-err');
-  if(!v.startsWith('AIza') || v.length < 30){
-    err.style.display='block'; return;
-  }
-  err.style.display='none';
-  API_KEY = v;
-  localStorage.setItem('gk', v);
-  document.getElementById('setup').style.display='none';
-}
-function resetKey(){
-  localStorage.removeItem('gk');
-  API_KEY='';
-  document.getElementById('key-inp').value='';
-  document.getElementById('setup').style.display='flex';
-}
+let conv=[], busy=false;
 
 // ── UI helpers ──
 function toast(m,dur){
@@ -233,7 +183,7 @@ function pv(txt){
 
 // ── Send message ──
 async function send(msg){
-  if(!msg.trim()||busy||!API_KEY)return;
+  if(!msg.trim()||busy)return;
   busy=true; document.getElementById('sb').disabled=true;
   addMsg('user',msg);
   conv.push({role:'user',parts:[{text:msg}]});
@@ -288,10 +238,6 @@ function clr(){
 
 document.getElementById('inp').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px'});
 document.getElementById('inp').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();hs()}});
-document.getElementById('key-inp').addEventListener('keydown',function(e){if(e.key==='Enter')saveKey()});
-
-// ── Init ──
-loadKey();
 </script>
 </body>
 </html>
