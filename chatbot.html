@@ -1,564 +1,712 @@
 <!DOCTYPE html>
-<!-- Coding By CodingNepal - youtube.com/@codingnepal -->
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chatbot | CodingNepal</title>
-    <!-- Linking Google fonts for icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
-    <link rel="stylesheet" href="style.css" />
-    <style>
-      /* Importing Google Fonts - Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap');
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", sans-serif;
-}
-body {
-  width: 100%;
-  min-height: 100vh;
-  background: linear-gradient(#EEEEFF, #C8C7FF);
-}
-#chatbot-toggler {
-  position: fixed;
-  bottom: 30px;
-  right: 35px;
-  border: none;
-  height: 50px;
-  width: 50px;
-  display: flex;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #5350C4;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-}
-body.show-chatbot #chatbot-toggler {
-  transform: rotate(90deg);
-}
-#chatbot-toggler span {
-  color: #fff;
-  position: absolute;
-}
-#chatbot-toggler span:last-child,
-body.show-chatbot #chatbot-toggler span:first-child {
-  opacity: 0;
-}
-body.show-chatbot #chatbot-toggler span:last-child {
-  opacity: 1;
-}
-.chatbot-popup {
-  position: fixed;
-  right: 35px;
-  bottom: 90px;
-  width: 420px;
-  overflow: hidden;
-  background: #fff;
-  border-radius: 15px;
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.2);
-  transform-origin: bottom right;
-  box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
-    0 32px 64px -48px rgba(0, 0, 0, 0.5);
-  transition: all 0.1s ease;
-}
-body.show-chatbot .chatbot-popup {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1);
-}
-.chat-header {
-  display: flex;
-  align-items: center;
-  padding: 15px 22px;
-  background: #5350C4;
-  justify-content: space-between;
-}
-.chat-header .header-info {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.header-info .chatbot-logo {
-  width: 35px;
-  height: 35px;
-  padding: 6px;
-  fill: #5350C4;
-  flex-shrink: 0;
-  background: #fff;
-  border-radius: 50%;
-}
-.header-info .logo-text {
-  color: #fff;
-  font-weight: 600;
-  font-size: 1.31rem;
-  letter-spacing: 0.02rem;
-}
-.chat-header #close-chatbot {
-  border: none;
-  color: #fff;
-  height: 40px;
-  width: 40px;
-  font-size: 1.9rem;
-  margin-right: -10px;
-  padding-top: 2px;
-  cursor: pointer;
-  border-radius: 50%;
-  background: none;
-  transition: 0.2s ease;
-}
-.chat-header #close-chatbot:hover {
-  background: #3d39ac;
-}
-.chat-body {
-  padding: 25px 22px;
-  gap: 20px;
-  display: flex;
-  height: 460px;
-  overflow-y: auto;
-  margin-bottom: 82px;
-  flex-direction: column;
-  scrollbar-width: thin;
-  scrollbar-color: #ccccf5 transparent;
-}
-.chat-body,
-.chat-form .message-input:hover {
-  scrollbar-color: #ccccf5 transparent;
-}
-.chat-body .message {
-  display: flex;
-  gap: 11px;
-  align-items: center;
-}
-.chat-body .message .bot-avatar {
-  width: 35px;
-  height: 35px;
-  padding: 6px;
-  fill: #fff;
-  flex-shrink: 0;
-  margin-bottom: 2px;
-  align-self: flex-end;
-  border-radius: 50%;
-  background: #5350C4;
-}
-.chat-body .message .message-text {
-  padding: 12px 16px;
-  max-width: 75%;
-  font-size: 0.95rem;
-}
-.chat-body .bot-message.thinking .message-text {
-  padding: 2px 16px;
-}
-.chat-body .bot-message .message-text {
-  background: #F2F2FF;
-  border-radius: 13px 13px 13px 3px;
-}
-.chat-body .user-message {
-  flex-direction: column;
-  align-items: flex-end;
-}
-.chat-body .user-message .message-text {
-  color: #fff;
-  background: #5350C4;
-  border-radius: 13px 13px 3px 13px;
-}
-.chat-body .user-message .attachment {
-  width: 50%;
-  margin-top: -7px;
-  border-radius: 13px 3px 13px 13px;
-}
-.chat-body .bot-message .thinking-indicator {
-  display: flex;
-  gap: 4px;
-  padding-block: 15px;
-}
-.chat-body .bot-message .thinking-indicator .dot {
-  height: 7px;
-  width: 7px;
-  opacity: 0.7;
-  border-radius: 50%;
-  background: #6F6BC2;
-  animation: dotPulse 1.8s ease-in-out infinite;
-}
-.chat-body .bot-message .thinking-indicator .dot:nth-child(1) {
-  animation-delay: 0.2s;
-}
-.chat-body .bot-message .thinking-indicator .dot:nth-child(2) {
-  animation-delay: 0.3s;
-}
-.chat-body .bot-message .thinking-indicator .dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-@keyframes dotPulse {
-  0%,
-  44% {
-    transform: translateY(0);
-  }
-  28% {
-    opacity: 0.4;
-    transform: translateY(-4px);
-  }
-  44% {
-    opacity: 0.2;
-  }
-}
-.chat-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background: #fff;
-  padding: 15px 22px 20px;
-}
-.chat-footer .chat-form {
-  display: flex;
-  align-items: center;
-  position: relative;
-  background: #fff;
-  border-radius: 32px;
-  outline: 1px solid #CCCCE5;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.06);
-  transition: 0s ease, border-radius 0s;
-}
-.chat-form:focus-within {
-  outline: 2px solid #5350C4;
-}
-.chat-form .message-input {
-  width: 100%;
-  height: 47px;
-  outline: none;
-  resize: none;
-  border: none;
-  max-height: 180px;
-  scrollbar-width: thin;
-  border-radius: inherit;
-  font-size: 0.95rem;
-  padding: 14px 0 12px 18px;
-  scrollbar-color: transparent transparent;
-}
-.chat-form .chat-controls {
-  gap: 3px;
-  height: 47px;
-  display: flex;
-  padding-right: 6px;
-  align-items: center;
-  align-self: flex-end;
-}
-.chat-form .chat-controls button {
-  height: 35px;
-  width: 35px;
-  border: none;
-  cursor: pointer;
-  color: #706DB0;
-  border-radius: 50%;
-  font-size: 1.15rem;
-  background: none;
-  transition: 0.2s ease;
-}
-.chat-form .chat-controls button:hover,
-body.show-emoji-picker .chat-controls #emoji-picker {
-  color: #3d39ac;
-  background: #f1f1ff;
-}
-.chat-form .chat-controls #send-message {
-  color: #fff;
-  display: none;
-  background: #5350C4;
-}
-.chat-form .chat-controls #send-message:hover {
-  background: #3d39ac;
-}
-.chat-form .message-input:valid~.chat-controls #send-message {
-  display: block;
-}
-.chat-form .file-upload-wrapper {
-  position: relative;
-  height: 35px;
-  width: 35px;
-}
-.chat-form .file-upload-wrapper :where(button, img) {
-  position: absolute;
-}
-.chat-form .file-upload-wrapper img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-.chat-form .file-upload-wrapper #file-cancel {
-  color: #ff0000;
-  background: #fff;
-}
-.chat-form .file-upload-wrapper :where(img, #file-cancel),
-.chat-form .file-upload-wrapper.file-uploaded #file-upload {
-  display: none;
-}
-.chat-form .file-upload-wrapper.file-uploaded img,
-.chat-form .file-upload-wrapper.file-uploaded:hover #file-cancel {
-  display: block;
-}
-em-emoji-picker {
-  position: absolute;
-  left: 50%;
-  top: -337px;
-  width: 100%;
-  max-width: 350px;
-  visibility: hidden;
-  max-height: 330px;
-  transform: translateX(-50%);
-}
-body.show-emoji-picker em-emoji-picker {
-  visibility: visible;
-}
-/* Responsive media query for mobile screens */
-@media (max-width: 520px) {
-  #chatbot-toggler {
-    right: 20px;
-    bottom: 20px;
-  }
-  .chatbot-popup {
-    right: 0;
-    bottom: 0;
-    height: 100%;
-    border-radius: 0;
-    width: 100%;
-  }
-  .chatbot-popup .chat-header {
-    padding: 12px 15px;
-  }
-  .chat-body {
-    height: calc(90% - 55px);
-    padding: 25px 15px;
-  }
-  .chat-footer {
-    padding: 10px 15px 15px;
-  }
-  .chat-form .file-upload-wrapper.file-uploaded #file-cancel {
-    opacity: 0;
-  }
-}
-    </style>
-  </head>
-  <body>
-    <!-- Chatbot Toggler -->
-    <button id="chatbot-toggler">
-      <span class="material-symbols-rounded">mode_comment</span>
-      <span class="material-symbols-rounded">close</span>
-    </button>
-    <div class="chatbot-popup">
-      <!-- Chatbot Header -->
-      <div class="chat-header">
-        <div class="header-info">
-          <svg class="chatbot-logo" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 1024 1024">
-            <path
-              d="M738.3 287.6H285.7c-59 0-106.8 47.8-106.8 106.8v303.1c0 59 47.8 106.8 106.8 106.8h81.5v111.1c0 .7.8 1.1 1.4.7l166.9-110.6 41.8-.8h117.4l43.6-.4c59 0 106.8-47.8 106.8-106.8V394.5c0-59-47.8-106.9-106.8-106.9zM351.7 448.2c0-29.5 23.9-53.5 53.5-53.5s53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5-53.5-23.9-53.5-53.5zm157.9 267.1c-67.8 0-123.8-47.5-132.3-109h264.6c-8.6 61.5-64.5 109-132.3 109zm110-213.7c-29.5 0-53.5-23.9-53.5-53.5s23.9-53.5 53.5-53.5 53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5zM867.2 644.5V453.1h26.5c19.4 0 35.1 15.7 35.1 35.1v121.1c0 19.4-15.7 35.1-35.1 35.1h-26.5zM95.2 609.4V488.2c0-19.4 15.7-35.1 35.1-35.1h26.5v191.3h-26.5c-19.4 0-35.1-15.7-35.1-35.1zM561.5 149.6c0 23.4-15.6 43.3-36.9 49.7v44.9h-30v-44.9c-21.4-6.5-36.9-26.3-36.9-49.7 0-28.6 23.3-51.9 51.9-51.9s51.9 23.3 51.9 51.9z"
-            />
-          </svg>
-          <h2 class="logo-text">Chatbot</h2>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Bible SPS — المساعد الروحي</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Amiri:ital@0;1&display=swap" rel="stylesheet"/>
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0"/>
+
+  <style>
+    /* ═══════════════════════════════════════
+       PLATFORM CSS VARIABLES
+    ═══════════════════════════════════════ */
+    :root {
+      --primary-400: #22d3ee;
+      --primary-500: #06b6d4;
+      --primary-600: #0891b2;
+      --primary-700: #0e7490;
+      --accent-500:  #8b5cf6;
+      --accent-600:  #7c3aed;
+      --gold-light:  #fcd34d;
+
+      --bg-primary:       #09090b;
+      --bg-secondary:     #18181b;
+      --bg-tertiary:      #27272a;
+      --surface:          #1e1e21;
+      --surface-elevated: #2a2a2e;
+      --surface-hover:    #35353a;
+
+      --text-primary:   #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted:     #71717a;
+
+      --border:       #3f3f46;
+      --border-light: #52525b;
+
+      --radius-sm: 0.5rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.25rem;
+      --radius-2xl: 1.5rem;
+      --radius-full: 999px;
+
+      --shadow-glow:    0 0 24px rgba(6,182,212,.35);
+      --shadow-popup:   0 0 128px rgba(0,0,0,.4), 0 32px 64px -48px rgba(0,0,0,.6);
+      --tr: 250ms cubic-bezier(0.4,0,0.2,1);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      /* Demo background — remove when embedding in platform */
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 20% 10%, rgba(6,182,212,.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139,92,246,.08) 0%, transparent 50%),
+        #09090b;
+    }
+
+    /* ═══════════════════════════════════════
+       TOGGLER BUTTON
+    ═══════════════════════════════════════ */
+    #chatbot-toggler {
+      position: fixed;
+      bottom: 30px;
+      left: 35px;        /* RTL — left side */
+      width: 58px;
+      height: 58px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+      box-shadow: var(--shadow-glow);
+      transition: var(--tr);
+      z-index: 1000;
+    }
+    #chatbot-toggler:hover { transform: scale(1.08); }
+    body.show-chatbot #chatbot-toggler { transform: rotate(90deg); }
+
+    #chatbot-toggler span {
+      color: #fff;
+      font-size: 26px;
+      position: absolute;
+      transition: var(--tr);
+    }
+    #chatbot-toggler span:last-child,
+    body.show-chatbot #chatbot-toggler span:first-child { opacity: 0; }
+    body.show-chatbot #chatbot-toggler span:last-child  { opacity: 1; }
+
+    /* Pulse ring */
+    #chatbot-toggler::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(6,182,212,.4);
+      animation: ring-pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes ring-pulse {
+      0%,100% { transform: scale(1);   opacity: .7; }
+      50%      { transform: scale(1.2); opacity: 0;  }
+    }
+
+    /* ═══════════════════════════════════════
+       CHATBOT POPUP
+    ═══════════════════════════════════════ */
+    .chatbot-popup {
+      position: fixed;
+      bottom: 100px;
+      left: 35px;         /* RTL */
+      width: 390px;
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-popup);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.15);
+      transform-origin: bottom left;  /* RTL */
+      transition: transform .2s cubic-bezier(0.34,1.56,0.64,1), opacity .15s ease;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+    }
+    body.show-chatbot .chatbot-popup {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    /* ── Header ── */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--primary-700), var(--accent-600));
+      flex-shrink: 0;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-avatar-wrap {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      animation: halo 3s ease-in-out infinite;
+    }
+    @keyframes halo {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,.3); }
+      50%      { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+    }
+    .header-text { display: flex; flex-direction: column; }
+    .header-title {
+      color: #fff;
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: .01rem;
+    }
+    .header-sub {
+      font-size: .68rem;
+      color: rgba(255,255,255,.7);
+      display: flex; align-items: center; gap: 4px; margin-top: 1px;
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 5px #4ade80;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+    #close-chatbot {
+      border: none; cursor: pointer;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      transition: var(--tr);
+    }
+    #close-chatbot:hover { background: rgba(255,255,255,.25); }
+
+    /* ── Chat body ── */
+    .chat-body {
+      flex: 1;
+      height: 420px;
+      overflow-y: auto;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .chat-body::-webkit-scrollbar { width: 4px; }
+    .chat-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Messages ── */
+    .message {
+      display: flex;
+      gap: 9px;
+      align-items: flex-end;
+      animation: fadeUp .3s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .message.user-message { flex-direction: row-reverse; }
+
+    .bot-avatar-sm {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-600), var(--accent-600));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .message-text {
+      padding: 10px 14px;
+      max-width: 78%;
+      font-size: .875rem;
+      line-height: 1.65;
+      border-radius: var(--radius-2xl);
+    }
+    .bot-message .message-text {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-bottom-right-radius: var(--radius-sm);
+    }
+    .user-message .message-text {
+      background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+      color: #fff;
+      border-bottom-left-radius: var(--radius-sm);
+    }
+
+    /* Verse card */
+    .verse-card {
+      margin-top: 8px; padding: 9px 12px;
+      background: rgba(6,182,212,.09);
+      border-right: 3px solid var(--primary-500);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      font-family: 'Amiri', serif;
+      font-style: italic;
+      font-size: .88rem;
+      color: var(--primary-400);
+    }
+    .verse-ref {
+      display: block; margin-top: 4px;
+      font-family: 'Cairo', sans-serif;
+      font-style: normal; font-size: .7rem;
+      color: var(--text-muted);
+    }
+
+    /* Thinking dots */
+    .bot-message.thinking .message-text { padding: 4px 14px; }
+    .thinking-indicator { display:flex; gap:4px; padding-block: 10px; }
+    .thinking-indicator .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--primary-500);
+      animation: dotPulse 1.8s ease-in-out infinite;
+    }
+    .thinking-indicator .dot:nth-child(1){ animation-delay:.2s; }
+    .thinking-indicator .dot:nth-child(2){ animation-delay:.35s; }
+    .thinking-indicator .dot:nth-child(3){ animation-delay:.5s; }
+    @keyframes dotPulse {
+      0%,44%{ transform:translateY(0); }
+      28%{ opacity:.4; transform:translateY(-5px); }
+      44%{ opacity:.2; }
+    }
+
+    /* ── Quick chips ── */
+    .chips-row {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 0 14px 10px;
+      flex-shrink: 0;
+    }
+    .chip {
+      padding: 5px 12px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-full);
+      font-family: 'Cairo', sans-serif;
+      font-size: .73rem; color: var(--text-secondary);
+      cursor: pointer; transition: var(--tr);
+    }
+    .chip:hover {
+      border-color: var(--primary-500);
+      color: var(--primary-400);
+      background: var(--surface-hover);
+    }
+
+    /* ── Footer / form ── */
+    .chat-footer {
+      flex-shrink: 0;
+      padding: 10px 14px 14px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+    }
+    .chat-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 6px 6px 6px 14px;
+      transition: var(--tr);
+    }
+    .chat-form:focus-within {
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(6,182,212,.12);
+    }
+    .message-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: 'Cairo', sans-serif;
+      font-size: .875rem;
+      color: var(--text-primary);
+      max-height: 120px;
+      line-height: 1.5;
+      padding: 4px 0;
+      scrollbar-width: thin;
+    }
+    .message-input::placeholder { color: var(--text-muted); }
+
+    /* File upload wrapper */
+    .file-upload-wrapper {
+      position: relative;
+      width: 34px; height: 34px;
+      flex-shrink: 0;
+    }
+    .file-upload-wrapper :where(button, img) { position: absolute; inset:0; }
+    .file-upload-wrapper img {
+      width:100%; height:100%;
+      object-fit: cover; border-radius: 50%;
+      display: none;
+    }
+    .file-upload-wrapper #file-cancel {
+      color: #ef4444;
+      background: var(--surface-elevated);
+      display: none;
+    }
+    .file-upload-wrapper.file-uploaded img { display: block; }
+    .file-upload-wrapper.file-uploaded #file-upload { display: none; }
+    .file-upload-wrapper.file-uploaded:hover #file-cancel { display: flex; }
+
+    .chat-controls {
+      display: flex; align-items: center; gap: 2px;
+    }
+    .chat-controls button {
+      width: 34px; height: 34px;
+      border: none; cursor: pointer;
+      border-radius: 50%;
+      background: none;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px;
+      transition: var(--tr);
+    }
+    .chat-controls button:hover { color: var(--primary-400); background: var(--surface-hover); }
+
+    #send-message {
+      background: linear-gradient(135deg, var(--primary-500), var(--accent-500)) !important;
+      color: #fff !important;
+      display: none !important;
+      box-shadow: var(--shadow-glow);
+    }
+    #send-message:hover { transform: scale(1.08); }
+    .message-input:valid ~ .chat-controls #send-message { display: flex !important; }
+
+    /* Attachment preview */
+    .attachment {
+      width: 50%;
+      margin-top: -5px;
+      border-radius: var(--radius-lg) var(--radius-sm) var(--radius-lg) var(--radius-lg);
+    }
+
+    /* Emoji picker */
+    em-emoji-picker {
+      position: absolute;
+      bottom: 80px;
+      left: 14px;
+      width: calc(100% - 28px);
+      max-width: 350px;
+      max-height: 320px;
+      visibility: hidden;
+      --border-radius: 12px;
+      --shadow: 0 10px 40px rgba(0,0,0,.5);
+    }
+    body.show-emoji-picker em-emoji-picker { visibility: visible; }
+
+    /* Mobile */
+    @media (max-width: 520px) {
+      .chatbot-popup { left:0; bottom:0; width:100%; border-radius:0; }
+      #chatbot-toggler { left:20px; bottom:20px; }
+      .chat-body { height: calc(100vh - 200px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Toggler ── -->
+  <button id="chatbot-toggler" aria-label="افتح المساعد الروحي">
+    <span class="material-symbols-rounded">volunteer_activism</span>
+    <span class="material-symbols-rounded">close</span>
+  </button>
+
+  <!-- ── Popup ── -->
+  <div class="chatbot-popup">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-info">
+        <div class="header-avatar-wrap">🕊️</div>
+        <div class="header-text">
+          <span class="header-title">المساعد الروحي</span>
+          <span class="header-sub">
+            <span class="status-dot"></span>
+            Daily Bible SPS
+          </span>
         </div>
-        <button id="close-chatbot" class="material-symbols-rounded">keyboard_arrow_down</button>
       </div>
-      <!-- Chatbot Body -->
-      <div class="chat-body">
-        <div class="message bot-message">
-          <svg class="bot-avatar" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 1024 1024">
-            <path
-              d="M738.3 287.6H285.7c-59 0-106.8 47.8-106.8 106.8v303.1c0 59 47.8 106.8 106.8 106.8h81.5v111.1c0 .7.8 1.1 1.4.7l166.9-110.6 41.8-.8h117.4l43.6-.4c59 0 106.8-47.8 106.8-106.8V394.5c0-59-47.8-106.9-106.8-106.9zM351.7 448.2c0-29.5 23.9-53.5 53.5-53.5s53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5-53.5-23.9-53.5-53.5zm157.9 267.1c-67.8 0-123.8-47.5-132.3-109h264.6c-8.6 61.5-64.5 109-132.3 109zm110-213.7c-29.5 0-53.5-23.9-53.5-53.5s23.9-53.5 53.5-53.5 53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5zM867.2 644.5V453.1h26.5c19.4 0 35.1 15.7 35.1 35.1v121.1c0 19.4-15.7 35.1-35.1 35.1h-26.5zM95.2 609.4V488.2c0-19.4 15.7-35.1 35.1-35.1h26.5v191.3h-26.5c-19.4 0-35.1-15.7-35.1-35.1zM561.5 149.6c0 23.4-15.6 43.3-36.9 49.7v44.9h-30v-44.9c-21.4-6.5-36.9-26.3-36.9-49.7 0-28.6 23.3-51.9 51.9-51.9s51.9 23.3 51.9 51.9z"
-            />
-          </svg>
-          <!-- prettier-ignore -->
-          <div class="message-text"> Hey there  <br /> How can I help you today? </div>
+      <button id="close-chatbot" aria-label="إغلاق">
+        <span class="material-symbols-rounded">keyboard_arrow_down</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="chat-body" id="chatBody">
+      <!-- Initial bot message -->
+      <div class="message bot-message">
+        <div class="bot-avatar-sm">🕊️</div>
+        <div class="message-text">
+          أهلاً بيك يا صديقي 🤍<br/>
+          أنا هنا معاك دايماً — شاركني اللي في قلبك أو اسأل عن أي حاجة روحية 🙏
         </div>
-      </div>
-      <!-- Chatbot Footer -->
-      <div class="chat-footer">
-        <form action="#" class="chat-form">
-          <textarea placeholder="Message..." class="message-input" required></textarea>
-          <div class="chat-controls">
-            <button type="button" id="emoji-picker" class="material-symbols-outlined">sentiment_satisfied</button>
-            <div class="file-upload-wrapper">
-              <input type="file" accept="image/*" id="file-input" hidden />
-              <img src="#" />
-              <button type="button" id="file-upload" class="material-symbols-rounded">attach_file</button>
-              <button type="button" id="file-cancel" class="material-symbols-rounded">close</button>
-            </div>
-            <button type="submit" id="send-message" class="material-symbols-rounded">arrow_upward</button>
-          </div>
-        </form>
       </div>
     </div>
-    <!-- Linking Emoji Mart script for emoji picker -->
-    <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
-    <!-- Linking custom script -->
-    <script src="script.js">
-      mic responses, and initialize the emoji picker.
 
-const chatBody = document.querySelector(".chat-body");
-const messageInput = document.querySelector(".message-input");
-const sendMessage = document.querySelector("#send-message");
-const fileInput = document.querySelector("#file-input");
-const fileUploadWrapper = document.querySelector(".file-upload-wrapper");
-const fileCancelButton = fileUploadWrapper.querySelector("#file-cancel");
-const chatbotToggler = document.querySelector("#chatbot-toggler");
-const closeChatbot = document.querySelector("#close-chatbot");
-// API setup
-const API_KEY = "AIzaSyCWpC_xqTGsloDeOUPNg00-c6a47YPIWwk";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-// Initialize user message and file data
-const userData = {
-  message: null,
-  file: {
-    data: null,
-    mime_type: null,
-  },
-};
-// Store chat history
-const chatHistory = [];
-const initialInputHeight = messageInput.scrollHeight;
-// Create message element with dynamic classes and return it
-const createMessageElement = (content, ...classes) => {
-  const div = document.createElement("div");
-  div.classList.add("message", ...classes);
-  div.innerHTML = content;
-  return div;
-};
-// Generate bot response using API
-const generateBotResponse = async (incomingMessageDiv) => {
-  const messageElement = incomingMessageDiv.querySelector(".message-text");
-  // Add user message to chat history
-  chatHistory.push({
-    role: "user",
-    parts: [{ text: userData.message }, ...(userData.file.data ? [{ inline_data: userData.file }] : [])],
-  });
-  // API request options
-  const requestOptions = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: chatHistory,
-    }),
-  };
-  try {
-    // Fetch bot response from API
-    const response = await fetch(API_URL, requestOptions);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error.message);
-    // Extract and display bot's response text
-    const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
-    messageElement.innerText = apiResponseText;
-    // Add bot response to chat history
-    chatHistory.push({
-      role: "model",
-      parts: [{ text: apiResponseText }],
+    <!-- Quick chips -->
+    <div class="chips-row" id="chipsRow">
+      <button class="chip" onclick="useChip(this,'أنا مضغوط ومحتاج مساعدة')">😓 مضغوط</button>
+      <button class="chip" onclick="useChip(this,'محتاج آية من الكتاب المقدس تشجعني')">📖 محتاج آية</button>
+      <button class="chip" onclick="useChip(this,'أنا تعبان ومش عارف أكمل')">😔 تعبان</button>
+      <button class="chip" onclick="useChip(this,'عايز أتأمل في كلام ربنا النهارده')">✨ أتأمل</button>
+      <button class="chip" onclick="useChip(this,'محتاج تشجيع النهارده')">💪 تشجيع</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="chat-footer">
+      <form class="chat-form" id="chatForm">
+        <textarea
+          class="message-input"
+          id="messageInput"
+          placeholder="اكتب رسالتك هنا..."
+          rows="1"
+          required
+        ></textarea>
+        <div class="chat-controls">
+          <button type="button" id="emoji-picker" class="material-symbols-rounded" aria-label="إيموجي">sentiment_satisfied</button>
+          <div class="file-upload-wrapper" id="fileUploadWrapper">
+            <input type="file" accept="image/*" id="fileInput" hidden/>
+            <img id="filePreview" src="#" alt=""/>
+            <button type="button" id="file-upload" class="material-symbols-rounded" aria-label="إرفاق صورة">attach_file</button>
+            <button type="button" id="file-cancel" class="material-symbols-rounded" aria-label="إلغاء">close</button>
+          </div>
+          <button type="submit" id="send-message" class="material-symbols-rounded" aria-label="إرسال">arrow_upward</button>
+        </div>
+      </form>
+    </div>
+  </div><!-- /.chatbot-popup -->
+
+  <!-- Emoji Mart -->
+  <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+
+  <script>
+    // ── 🔑 API KEY ──
+    const GEMINI_API_KEY = 'AIzaSyC-CZs8pYW54R4OaB3QVaM3V1utRgFbQak';
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    // ── System prompt — Egyptian Arabic spiritual assistant ──
+    const SYSTEM_PROMPT = `أنت مساعد روحي وعاطفي لمنصة "Daily Bible SPS" التعليمية.
+دورك هو دعم الطلاب والمعلمين روحياً وعاطفياً بأسلوب إنساني ودافئ.
+
+تحدث دائماً باللهجة المصرية العامية البسيطة والودودة.
+اجعل ردودك قصيرة إلى متوسطة — لا تطول.
+اختم دائماً بملاحظة إيجابية أو مشجعة.
+
+قواعد مهمة:
+- لا تعطي فتاوى دينية أو إجابات لاهوتية عميقة.
+- لا تحل محل الكاهن أو المرشد الروحي. إذا كان الموضوع عميقاً قل: "ممكن تسأل أب اعترافك في الموضوع ده 🙏"
+- تجنب الأسئلة الغير متعلقة بالدعم الروحي والعاطفي.
+- عند اقتراح آية، ضعها هكذا بالضبط: [VERSE]نص الآية|المرجع[/VERSE]
+- لو المستخدم بعت صورة، علق عليها بشكل روحي ومشجع.
+
+أمثلة على أسلوبك:
+- "متقلقش... ربنا معاك 🤍"
+- "خدها واحدة واحدة... إنت بتعمل اللي عليك 💛"
+- "أنا حاسس بيك، وكلنا بنمر بأوقات صعبة 🙏"`;
+
+    // ── State ──
+    const chatHistory = [];
+    const userData = { message: null, file: { data: null, mime_type: null } };
+
+    // ── DOM refs ──
+    const chatBody        = document.getElementById('chatBody');
+    const messageInput    = document.getElementById('messageInput');
+    const chatForm        = document.getElementById('chatForm');
+    const fileInput       = document.getElementById('fileInput');
+    const fileUpWrapper   = document.getElementById('fileUploadWrapper');
+    const fileCancelBtn   = document.getElementById('file-cancel');
+    const toggler         = document.getElementById('chatbot-toggler');
+    const closeBtn        = document.getElementById('close-chatbot');
+    const chipsRow        = document.getElementById('chipsRow');
+
+    // ── Toggle popup ──
+    toggler.addEventListener('click', () => document.body.classList.toggle('show-chatbot'));
+    closeBtn.addEventListener('click', () => document.body.classList.remove('show-chatbot'));
+
+    // ── Auto-resize textarea ──
+    const initH = messageInput.scrollHeight;
+    messageInput.addEventListener('input', () => {
+      messageInput.style.height = `${initH}px`;
+      messageInput.style.height = `${messageInput.scrollHeight}px`;
     });
-  } catch (error) {
-    // Handle error in API response
-    console.log(error);
-    messageElement.innerText = error.message;
-    messageElement.style.color = "#ff0000";
-  } finally {
-    // Reset user's file data, removing thinking indicator and scroll chat to bottom
-    userData.file = {};
-    incomingMessageDiv.classList.remove("thinking");
-    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
-  }
-};
-// Handle outgoing user messages
-const handleOutgoingMessage = (e) => {
-  e.preventDefault();
-  userData.message = messageInput.value.trim();
-  messageInput.value = "";
-  messageInput.dispatchEvent(new Event("input"));
-  fileUploadWrapper.classList.remove("file-uploaded");
-  // Create and display user message
-  const messageContent = `<div class="message-text"></div>
-                          ${userData.file.data ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}" class="attachment" />` : ""}`;
-  const outgoingMessageDiv = createMessageElement(messageContent, "user-message");
-  outgoingMessageDiv.querySelector(".message-text").innerText = userData.message;
-  chatBody.appendChild(outgoingMessageDiv);
-  chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
-  // Simulate bot response with thinking indicator after a delay
-  setTimeout(() => {
-    const messageContent = `<svg class="bot-avatar" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 1024 1024">
-            <path
-              d="M738.3 287.6H285.7c-59 0-106.8 47.8-106.8 106.8v303.1c0 59 47.8 106.8 106.8 106.8h81.5v111.1c0 .7.8 1.1 1.4.7l166.9-110.6 41.8-.8h117.4l43.6-.4c59 0 106.8-47.8 106.8-106.8V394.5c0-59-47.8-106.9-106.8-106.9zM351.7 448.2c0-29.5 23.9-53.5 53.5-53.5s53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5-53.5-23.9-53.5-53.5zm157.9 267.1c-67.8 0-123.8-47.5-132.3-109h264.6c-8.6 61.5-64.5 109-132.3 109zm110-213.7c-29.5 0-53.5-23.9-53.5-53.5s23.9-53.5 53.5-53.5 53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5zM867.2 644.5V453.1h26.5c19.4 0 35.1 15.7 35.1 35.1v121.1c0 19.4-15.7 35.1-35.1 35.1h-26.5zM95.2 609.4V488.2c0-19.4 15.7-35.1 35.1-35.1h26.5v191.3h-26.5c-19.4 0-35.1-15.7-35.1-35.1zM561.5 149.6c0 23.4-15.6 43.3-36.9 49.7v44.9h-30v-44.9c-21.4-6.5-36.9-26.3-36.9-49.7 0-28.6 23.3-51.9 51.9-51.9s51.9 23.3 51.9 51.9z"/></svg>
+
+    // ── Enter to send (desktop) ──
+    messageInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey && messageInput.value.trim() && window.innerWidth > 520) {
+        e.preventDefault();
+        handleOutgoing(e);
+      }
+    });
+
+    // ── Form submit ──
+    chatForm.addEventListener('submit', e => handleOutgoing(e));
+
+    // ── Chip shortcut ──
+    function useChip(btn, text) {
+      messageInput.value = text;
+      messageInput.dispatchEvent(new Event('input'));
+      chipsRow.style.display = 'none';
+      handleOutgoing(new Event('submit'));
+    }
+
+    // ── Create message element ──
+    function createMsg(html, ...classes) {
+      const div = document.createElement('div');
+      div.classList.add('message', ...classes);
+      div.innerHTML = html;
+      return div;
+    }
+
+    // ── Render text (parse verse tags) ──
+    function renderText(raw) {
+      const verseMatch = raw.match(/\[VERSE\]([\s\S]*?)\|([\s\S]*?)\[\/VERSE\]/);
+      if (!verseMatch) return `<div class="message-text">${esc(raw)}</div>`;
+      const before = esc(raw.replace(/\[VERSE\][\s\S]*?\[\/VERSE\]/g, '').trim());
+      return `<div class="message-text">
+        ${before ? `<p>${before}</p>` : ''}
+        <div class="verse-card">${esc(verseMatch[1].trim())}<span class="verse-ref">${esc(verseMatch[2].trim())}</span></div>
+      </div>`;
+    }
+    function esc(t) {
+      return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>');
+    }
+
+    // ── Handle outgoing message ──
+    function handleOutgoing(e) {
+      e.preventDefault && e.preventDefault();
+      const text = messageInput.value.trim();
+      if (!text && !userData.file.data) return;
+
+      userData.message = text;
+      messageInput.value = '';
+      messageInput.style.height = `${initH}px`;
+      fileUpWrapper.classList.remove('file-uploaded');
+
+      // User bubble
+      const userHTML = `
+        <div class="message-text">${esc(text)}</div>
+        ${userData.file.data ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}" class="attachment"/>` : ''}`;
+      chatBody.appendChild(createMsg(userHTML, 'user-message'));
+      scrollBottom();
+
+      // Bot thinking
+      setTimeout(() => {
+        const thinkHTML = `
+          <div class="bot-avatar-sm">🕊️</div>
           <div class="message-text">
             <div class="thinking-indicator">
-              <div class="dot"></div>
-              <div class="dot"></div>
-              <div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
           </div>`;
-    const incomingMessageDiv = createMessageElement(messageContent, "bot-message", "thinking");
-    chatBody.appendChild(incomingMessageDiv);
-    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
-    generateBotResponse(incomingMessageDiv);
-  }, 600);
-};
-// Adjust input field height dynamically
-messageInput.addEventListener("input", () => {
-  messageInput.style.height = `${initialInputHeight}px`;
-  messageInput.style.height = `${messageInput.scrollHeight}px`;
-  document.querySelector(".chat-form").style.borderRadius = messageInput.scrollHeight > initialInputHeight ? "15px" : "32px";
-});
-// Handle Enter key press for sending messages
-messageInput.addEventListener("keydown", (e) => {
-  const userMessage = e.target.value.trim();
-  if (e.key === "Enter" && !e.shiftKey && userMessage && window.innerWidth > 768) {
-    handleOutgoingMessage(e);
-  }
-});
-// Handle file input change and preview the selected file
-fileInput.addEventListener("change", () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    fileInput.value = "";
-    fileUploadWrapper.querySelector("img").src = e.target.result;
-    fileUploadWrapper.classList.add("file-uploaded");
-    const base64String = e.target.result.split(",")[1];
-    // Store file data in userData
-    userData.file = {
-      data: base64String,
-      mime_type: file.type,
-    };
-  };
-  reader.readAsDataURL(file);
-});
-// Cancel file upload
-fileCancelButton.addEventListener("click", () => {
-  userData.file = {};
-  fileUploadWrapper.classList.remove("file-uploaded");
-});
-// Initialize emoji picker and handle emoji selection
-const picker = new EmojiMart.Picker({
-  theme: "light",
-  skinTonePosition: "none",
-  previewPosition: "none",
-  onEmojiSelect: (emoji) => {
-    const { selectionStart: start, selectionEnd: end } = messageInput;
-    messageInput.setRangeText(emoji.native, start, end, "end");
-    messageInput.focus();
-  },
-  onClickOutside: (e) => {
-    if (e.target.id === "emoji-picker") {
-      document.body.classList.toggle("show-emoji-picker");
-    } else {
-      document.body.classList.remove("show-emoji-picker");
+        const thinkDiv = createMsg(thinkHTML, 'bot-message', 'thinking');
+        chatBody.appendChild(thinkDiv);
+        scrollBottom();
+        generateResponse(thinkDiv);
+      }, 500);
     }
-  },
-});
-document.querySelector(".chat-form").appendChild(picker);
-sendMessage.addEventListener("click", (e) => handleOutgoingMessage(e));
-document.querySelector("#file-upload").addEventListener("click", () => fileInput.click());
-closeChatbot.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
-chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
-    </script>
-  </body>
+
+    // ── Call Gemini API ──
+    async function generateResponse(thinkDiv) {
+      const msgEl = thinkDiv.querySelector('.message-text');
+
+      // Build history entry
+      const parts = [{ text: userData.message || '' }];
+      if (userData.file.data) parts.push({ inline_data: { data: userData.file.data, mime_type: userData.file.mime_type } });
+      chatHistory.push({ role: 'user', parts });
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: chatHistory,
+            generationConfig: { temperature: 0.82, topK: 40, topP: 0.95, maxOutputTokens: 512 },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+            ]
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'ماعرفتش أرد... جرب تاني 🙏';
+        thinkDiv.classList.remove('thinking');
+        thinkDiv.innerHTML = `<div class="bot-avatar-sm">🕊️</div>${renderText(reply)}`;
+        chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+
+      } catch (err) {
+        thinkDiv.classList.remove('thinking');
+        thinkDiv.innerHTML = `<div class="bot-avatar-sm">🕊️</div><div class="message-text" style="color:#f87171">في مشكلة في الاتصال... جرب تاني بعد شوية 🙏</div>`;
+        console.error(err);
+      } finally {
+        userData.file = {};
+        scrollBottom();
+      }
+    }
+
+    function scrollBottom() {
+      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+    }
+
+    // ── File upload ──
+    document.getElementById('file-upload').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        fileInput.value = '';
+        document.getElementById('filePreview').src = e.target.result;
+        fileUpWrapper.classList.add('file-uploaded');
+        userData.file = { data: e.target.result.split(',')[1], mime_type: file.type };
+      };
+      reader.readAsDataURL(file);
+    });
+    fileCancelBtn.addEventListener('click', () => {
+      userData.file = {};
+      fileUpWrapper.classList.remove('file-uploaded');
+    });
+
+    // ── Emoji picker ──
+    const picker = new EmojiMart.Picker({
+      theme: 'dark',
+      skinTonePosition: 'none',
+      previewPosition: 'none',
+      onEmojiSelect: emoji => {
+        const { selectionStart: s, selectionEnd: e } = messageInput;
+        messageInput.setRangeText(emoji.native, s, e, 'end');
+        messageInput.dispatchEvent(new Event('input'));
+        messageInput.focus();
+      },
+      onClickOutside: e => {
+        if (e.target.id === 'emoji-picker') document.body.classList.toggle('show-emoji-picker');
+        else document.body.classList.remove('show-emoji-picker');
+      }
+    });
+    document.querySelector('.chatbot-popup').appendChild(picker);
+    document.getElementById('emoji-picker').addEventListener('click', () => document.body.classList.toggle('show-emoji-picker'));
+  </script>
+</body>
 </html>
