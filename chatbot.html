@@ -501,28 +501,19 @@
     const GEMINI_API_KEY = 'AIzaSyC-CZs8pYW54R4OaB3QVaM3V1utRgFbQak';
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-    // ── System prompt — Egyptian Arabic spiritual assistant ──
-    const SYSTEM_PROMPT = `أنت مساعد روحي وعاطفي لمنصة "Daily Bible SPS" التعليمية.
-دورك هو دعم الطلاب والمعلمين روحياً وعاطفياً بأسلوب إنساني ودافئ.
-
-تحدث دائماً باللهجة المصرية العامية البسيطة والودودة.
-اجعل ردودك قصيرة إلى متوسطة — لا تطول.
-اختم دائماً بملاحظة إيجابية أو مشجعة.
-
-قواعد مهمة:
-- لا تعطي فتاوى دينية أو إجابات لاهوتية عميقة.
-- لا تحل محل الكاهن أو المرشد الروحي. إذا كان الموضوع عميقاً قل: "ممكن تسأل أب اعترافك في الموضوع ده 🙏"
-- تجنب الأسئلة الغير متعلقة بالدعم الروحي والعاطفي.
-- عند اقتراح آية، ضعها هكذا بالضبط: [VERSE]نص الآية|المرجع[/VERSE]
-- لو المستخدم بعت صورة، علق عليها بشكل روحي ومشجع.
-
-أمثلة على أسلوبك:
-- "متقلقش... ربنا معاك 🤍"
-- "خدها واحدة واحدة... إنت بتعمل اللي عليك 💛"
-- "أنا حاسس بيك، وكلنا بنمر بأوقات صعبة 🙏"`;
 
     // ── State ──
-    const chatHistory = [];
+    // Prime history with system context as first user/model turn
+    const chatHistory = [
+      {
+        role: 'user',
+        parts: [{ text: 'أنت مساعد روحي وعاطفي لمنصة Daily Bible SPS. تحدث باللهجة المصرية العامية البسيطة. ردودك قصيرة ودافئة وإنسانية. لا تعطي فتاوى دينية ولا تحل محل الكاهن. لو الموضوع عميق قل: ممكن تسأل أب اعترافك. لما تقترح آية اكتبها هكذا: [VERSE]نص الآية|المرجع[/VERSE]. اختم دايماً بملاحظة إيجابية.' }]
+      },
+      {
+        role: 'model',
+        parts: [{ text: 'تمام، أنا فاهم دوري. هساعد الناس بأسلوب دافئ وودود. 🕊️' }]
+      }
+    ];
     const userData = { message: null, file: { data: null, mime_type: null } };
 
     // ── DOM refs ──
@@ -624,9 +615,7 @@
 
     // ── Call Gemini API ──
     async function generateResponse(thinkDiv) {
-      const msgEl = thinkDiv.querySelector('.message-text');
-
-      // Build history entry
+      // Add user message to history
       const parts = [{ text: userData.message || '' }];
       if (userData.file.data) parts.push({ inline_data: { data: userData.file.data, mime_type: userData.file.mime_type } });
       chatHistory.push({ role: 'user', parts });
@@ -636,20 +625,18 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
             contents: chatHistory,
-            generationConfig: { temperature: 0.82, topK: 40, topP: 0.95, maxOutputTokens: 512 },
-            safetySettings: [
-              { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
-            ]
+            generationConfig: { temperature: 0.85, maxOutputTokens: 512 }
           })
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+
+        // Show detailed error in console to help debug
+        if (!res.ok) {
+          console.error('Gemini API error:', JSON.stringify(data));
+          throw new Error(data?.error?.message || `HTTP ${res.status}`);
+        }
 
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'ماعرفتش أرد... جرب تاني 🙏';
         thinkDiv.classList.remove('thinking');
@@ -657,9 +644,12 @@
         chatHistory.push({ role: 'model', parts: [{ text: reply }] });
 
       } catch (err) {
+        // Remove last user message from history so user can retry
+        chatHistory.pop();
         thinkDiv.classList.remove('thinking');
-        thinkDiv.innerHTML = `<div class="bot-avatar-sm">🕊️</div><div class="message-text" style="color:#f87171">في مشكلة في الاتصال... جرب تاني بعد شوية 🙏</div>`;
-        console.error(err);
+        const errMsg = err.message?.includes('API_KEY') ? 'المفتاح مش صح — تأكد من الـ API Key 🙏' : 'في مشكلة في الاتصال... جرب تاني بعد شوية 🙏';
+        thinkDiv.innerHTML = `<div class="bot-avatar-sm">🕊️</div><div class="message-text" style="color:#f87171">${errMsg}</div>`;
+        console.error('generateResponse error:', err);
       } finally {
         userData.file = {};
         scrollBottom();
