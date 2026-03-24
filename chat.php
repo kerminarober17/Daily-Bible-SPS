@@ -2,22 +2,37 @@
 /**
  * chat.php – Groq API Proxy for Daily Bible SPS
  * 
- * Place this file on your server.
- * JS calls: fetch("chat.php", { method: "POST", body: JSON.stringify({ message: "..." }) })
+ * Expects POST request with JSON:
+ * {
+ *   "message": "user message",
+ *   "history": [{"role": "user/assistant", "content": "..."}]  (optional)
+ * }
+ *
+ * Returns JSON: { "reply": "AI response" } or { "error": "..." }
  */
 
-// ─── Config ───────────────────────────────────
-define('GROQ_API_KEY', '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'); // ← ضع مفتاحك هنا
+// ─── Configuration ─────────────────────────────────────────
+// Read API key from environment variable (most secure)
+$apiKey = getenv('GROQ_API_KEY');
+if (!$apiKey) {
+    // Fallback for development only – never commit real keys!
+    $apiKey = ''; // ← DO NOT PUT YOUR KEY HERE IN PRODUCTION
+}
+if (empty($apiKey)) {
+    http_response_code(500);
+    die(json_encode(['error' => 'Server configuration: missing GROQ_API_KEY']));
+}
+
 define('GROQ_MODEL',   'llama3-70b-8192');
 define('MAX_CHARS',    500);
 
-$SYSTEM_PROMPT = 'أنت مساعد روحاني لطيف ودافي على منصة "Daily Bible SPS" التعليمية الروحية.
+$systemPrompt = 'أنت مساعد روحاني لطيف ودافي على منصة "Daily Bible SPS" التعليمية الروحية.
 تكلم بالعربي المصري العامية الدافئة.
 ردودك قصيرة ومفيدة وملهمة (٣–٥ جمل كحد أقصى).
 استخدم آيات من الكتاب المقدس لما يكون مناسب.
 أسلوبك: حنين، مشجع، وقريب من القلب. لا تكن رسمياً أو بارداً.';
 
-// ─── CORS headers (adjust origin in production) ──
+// ─── CORS headers (adjust in production) ───────────────────
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -28,34 +43,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// ─── Only accept POST ─────────────────────────
+// ─── Only POST allowed ─────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method Not Allowed']);
     exit;
 }
 
-// ─── Parse request body ───────────────────────
+// ─── Parse request body ────────────────────────────────────
 $body = json_decode(file_get_contents('php://input'), true);
+if (!is_array($body)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
 
-if (empty($body['message']) || !is_string($body['message'])) {
+$userMessage = trim($body['message'] ?? '');
+if ($userMessage === '') {
     http_response_code(400);
     echo json_encode(['error' => 'message is required']);
     exit;
 }
-
-$userMessage = trim($body['message']);
-
-// Enforce message length
 if (mb_strlen($userMessage) > MAX_CHARS) {
     http_response_code(400);
     echo json_encode(['error' => 'Message too long']);
     exit;
 }
 
-// Build conversation (optional history support)
+// Build message history (optional)
 $history = [];
-if (!empty($body['history']) && is_array($body['history'])) {
+if (isset($body['history']) && is_array($body['history'])) {
     foreach ($body['history'] as $msg) {
         if (isset($msg['role'], $msg['content'])) {
             $history[] = [
@@ -64,23 +81,25 @@ if (!empty($body['history']) && is_array($body['history'])) {
             ];
         }
     }
-    // Keep last 10 turns only (memory safety)
+    // Keep last 10 turns for context length safety
     $history = array_slice($history, -10);
 }
 
+// Add current user message
 $history[] = ['role' => 'user', 'content' => $userMessage];
 
-// ─── Call Groq API via cURL ───────────────────
+// Prepare Groq API request
 $payload = json_encode([
     'model'       => GROQ_MODEL,
     'messages'    => array_merge(
-        [['role' => 'system', 'content' => $SYSTEM_PROMPT]],
+        [['role' => 'system', 'content' => $systemPrompt]],
         $history
     ),
     'max_tokens'  => 400,
     'temperature' => 0.75
 ]);
 
+// ─── Call Groq API via cURL ────────────────────────────────
 $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
@@ -89,7 +108,7 @@ curl_setopt_array($ch, [
     CURLOPT_TIMEOUT        => 20,
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . GROQ_API_KEY,
+        'Authorization: Bearer ' . $apiKey,
     ],
 ]);
 
@@ -98,27 +117,26 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlErr  = curl_error($ch);
 curl_close($ch);
 
-// ─── Handle errors ────────────────────────────
+// ─── Handle errors ─────────────────────────────────────────
 if ($curlErr) {
     http_response_code(502);
-    echo json_encode(['error' => 'Network error', 'reply' => null]);
+    echo json_encode(['error' => 'Network error: ' . $curlErr]);
     exit;
 }
 
 if ($httpCode !== 200) {
     http_response_code(502);
-    echo json_encode(['error' => "Groq API error: $httpCode", 'reply' => null]);
+    echo json_encode(['error' => "Groq API error (HTTP $httpCode)"]);
     exit;
 }
 
-// ─── Parse & return reply ─────────────────────
-$data  = json_decode($response, true);
+$data = json_decode($response, true);
 $reply = $data['choices'][0]['message']['content'] ?? null;
 
 if (!$reply) {
     http_response_code(500);
-    echo json_encode(['error' => 'Empty response from AI', 'reply' => null]);
+    echo json_encode(['error' => 'Empty response from AI']);
     exit;
 }
 
-echo json_encode(['reply' => trim($reply), 'error' => null]);
+echo json_encode(['reply' => trim($reply)]);
