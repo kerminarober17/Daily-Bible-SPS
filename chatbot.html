@@ -5,767 +5,728 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daily Bible SPS — مساعدك الروحي</title>
 
-  <!-- Fonts matching the platform -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
-  <!-- Icons matching the platform -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    /* ════════════════════════════════════════════
-       CSS VARIABLES — matches global.css exactly
-    ════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════
+       TOKENS — matches global.css exactly
+    ══════════════════════════════════════════════ */
     :root {
-      --primary-400: #22d3ee;
-      --primary-500: #06b6d4;
-      --primary-600: #0891b2;
-      --primary-700: #0e7490;
-      --accent-500:  #8b5cf6;
+      --p4:  #22d3ee; --p5: #06b6d4; --p6: #0891b2; --p7: #0e7490;
+      --ac5: #8b5cf6;
+      --bg0: #09090b; --bg1: #18181b; --bg2: #27272a;
+      --s0:  #1e1e21; --s1: #2a2a2e; --s2: #35353a;
+      --t0:  #fafafa; --t1: #a1a1aa; --t2: #71717a;
+      --bd:  #3f3f46; --bdl: #52525b;
+      --ok:  #10b981; --warn: #f59e0b; --err: #ef4444;
 
-      --bg-primary:       #09090b;
-      --bg-secondary:     #18181b;
-      --bg-tertiary:      #27272a;
-      --surface:          #1e1e21;
-      --surface-elevated: #2a2a2e;
-      --surface-hover:    #35353a;
+      --sh-md:   0 4px 6px -1px rgb(0 0 0/.12),0 2px 4px -2px rgb(0 0 0/.08);
+      --sh-lg:   0 10px 15px -3px rgb(0 0 0/.18),0 4px 6px -4px rgb(0 0 0/.1);
+      --sh-xl:   0 20px 25px -5px rgb(0 0 0/.25),0 8px 10px -6px rgb(0 0 0/.1);
+      --glow:    0 0 22px rgb(6 182 212/.3);
+      --glow-lg: 0 0 40px rgb(6 182 212/.18);
 
-      --text-primary:   #fafafa;
-      --text-secondary: #a1a1aa;
-      --text-muted:     #71717a;
+      --r-sm: .5rem; --r-md: .75rem; --r-lg: 1rem;
+      --r-xl: 1.25rem; --r-2xl: 1.5rem; --r-3xl: 2rem;
 
-      --border:       #3f3f46;
-      --border-light: #52525b;
+      --tr:  250ms cubic-bezier(.4,0,.2,1);
+      --trb: 500ms cubic-bezier(.68,-.55,.265,1.55);
 
-      --shadow-md:   0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1);
-      --shadow-lg:   0 10px 15px -3px rgb(0 0 0/.15),0 4px 6px -4px rgb(0 0 0/.1);
-      --shadow-xl:   0 20px 25px -5px rgb(0 0 0/.2),0 8px 10px -6px rgb(0 0 0/.1);
-      --shadow-glow: 0 0 20px rgb(6 182 212/.35);
-
-      --radius-sm:  0.5rem;
-      --radius-md:  0.75rem;
-      --radius-lg:  1rem;
-      --radius-xl:  1.25rem;
-      --radius-2xl: 1.5rem;
-      --radius-3xl: 2rem;
-
-      --tr: 250ms cubic-bezier(0.4,0,0.2,1);
-      --tr-bounce: 500ms cubic-bezier(0.68,-0.55,0.265,1.55);
-
-      /* Chat-specific */
-      --user-bubble: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
-      --bot-bubble:  var(--surface-elevated);
+      --ub: linear-gradient(135deg,var(--p5),var(--p7));
     }
 
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════════
        BASE
-    ════════════════════════════════════════════ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { font-size: 15px; scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Cairo', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      height: 100dvh;
-      overflow: hidden;
-      direction: rtl;
+    ══════════════════════════════════════════════ */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:15px;scroll-behavior:smooth}
+    body{
+      font-family:'Cairo',sans-serif;
+      background:var(--bg0); color:var(--t0);
+      height:100dvh; overflow:hidden; direction:rtl;
     }
 
-    /* Subtle radial glow top */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    /* layered ambient glow */
+    body::before{
+      content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
       background:
-        radial-gradient(ellipse 70% 40% at 50% 0%, rgb(6 182 212 / .07) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 30% at 90% 100%, rgb(139 92 246 / .05) 0%, transparent 55%);
+        radial-gradient(ellipse 80% 50% at 50% -5%, rgb(6 182 212/.08) 0%,transparent 60%),
+        radial-gradient(ellipse 55% 35% at 95% 95%, rgb(139 92 246/.06) 0%,transparent 55%),
+        radial-gradient(ellipse 40% 25% at 5% 80%,  rgb(6 182 212/.04) 0%,transparent 50%);
     }
 
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════════
        LAYOUT
-    ════════════════════════════════════════════ */
-    .app {
-      position: relative; z-index: 1;
-      display: flex; align-items: center; justify-content: center;
-      height: 100dvh; padding: 12px;
+    ══════════════════════════════════════════════ */
+    .app{
+      position:relative;z-index:1;
+      display:flex;align-items:center;justify-content:center;
+      height:100dvh;padding:14px;
     }
 
-    .chat-card {
-      width: 100%; max-width: 700px;
-      height: min(820px, calc(100dvh - 24px));
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-3xl);
-      box-shadow: var(--shadow-xl), 0 0 0 1px rgb(6 182 212 / .06);
-      display: flex; flex-direction: column; overflow: hidden;
+    .chat-card{
+      width:100%;max-width:720px;
+      height:min(840px,calc(100dvh - 28px));
+      background:var(--bg1);
+      border:1px solid var(--bd);
+      border-radius:var(--r-3xl);
+      box-shadow:var(--sh-xl),0 0 0 1px rgb(6 182 212/.05),var(--glow-lg);
+      display:flex;flex-direction:column;overflow:hidden;
+      /* subtle inner highlight on top edge */
+      position:relative;
+    }
+    .chat-card::before{
+      content:'';position:absolute;inset:0;border-radius:inherit;
+      background:linear-gradient(180deg,rgb(255 255 255/.025) 0%,transparent 60px);
+      pointer-events:none;z-index:0;
     }
 
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════════
        HEADER
-    ════════════════════════════════════════════ */
-    .chat-header {
-      padding: 16px 20px;
-      background: var(--bg-tertiary);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 12px;
-      flex-shrink: 0;
+    ══════════════════════════════════════════════ */
+    .chat-header{
+      position:relative;z-index:1;
+      padding:14px 20px;
+      background:linear-gradient(180deg,var(--bg2) 0%,var(--bg1) 100%);
+      border-bottom:1px solid var(--bd);
+      display:flex;align-items:center;gap:12px;flex-shrink:0;
     }
 
-    .header-avatar {
-      width: 44px; height: 44px; border-radius: var(--radius-md);
-      background: #111113;
-      border: 1.5px solid rgb(255 255 255 / .13);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; flex-shrink: 0;
-      box-shadow: var(--shadow-md), var(--shadow-glow);
-      color: var(--primary-400);
+    .hdr-avatar{
+      position:relative;flex-shrink:0;
+    }
+    .hdr-avatar-inner{
+      width:46px;height:46px;border-radius:var(--r-md);
+      background:linear-gradient(135deg,#1a1a1f,#111113);
+      border:1.5px solid rgb(255 255 255/.12);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.15rem;color:var(--p4);
+      box-shadow:var(--sh-md),var(--glow);
+      transition:box-shadow var(--tr);
+    }
+    .hdr-avatar-inner:hover{box-shadow:var(--sh-lg),0 0 30px rgb(6 182 212/.5);}
+
+    .hdr-pulse{
+      position:absolute;top:-2px;left:-2px;
+      width:12px;height:12px;border-radius:50%;
+      background:var(--ok);
+      border:2px solid var(--bg1);
+    }
+    .hdr-pulse::after{
+      content:'';position:absolute;inset:-3px;border-radius:50%;
+      background:rgb(16 185 129/.35);
+      animation:ripple 2s ease-in-out infinite;
+    }
+    @keyframes ripple{
+      0%{transform:scale(1);opacity:.8;}
+      100%{transform:scale(2.2);opacity:0;}
     }
 
-    .header-info { flex: 1; min-width: 0; }
+    .hdr-info{flex:1;min-width:0;}
+    .hdr-name{
+      font-size:.95rem;font-weight:800;color:var(--t0);
+      display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+    }
+    .hdr-name .badge{
+      font-size:.62rem;font-weight:700;
+      padding:2px 8px;border-radius:20px;
+      background:rgb(6 182 212/.12);
+      border:1px solid rgb(6 182 212/.25);
+      color:var(--p4);letter-spacing:.3px;
+    }
+    .hdr-sub{font-size:.73rem;color:var(--t2);margin-top:2px;}
 
-    .header-name {
-      font-size: 0.95rem; font-weight: 800;
-      color: var(--text-primary);
-      display: flex; align-items: center; gap: 8px;
+    .hdr-logo{
+      font-size:.68rem;font-weight:700;letter-spacing:1.8px;
+      text-transform:uppercase;color:var(--t2);
+      padding:5px 10px;border:1px solid var(--bd);
+      border-radius:var(--r-sm);background:var(--s0);flex-shrink:0;
     }
 
-    .online-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: rgb(16 185 129 / .15);
-      border: 1px solid rgb(16 185 129 / .3);
-      border-radius: 20px;
-      padding: 1px 8px;
-      font-size: 0.65rem; font-weight: 600;
-      color: #34d399;
+    /* clear button */
+    .hdr-clear{
+      width:32px;height:32px;border-radius:var(--r-sm);
+      background:transparent;border:1px solid var(--bd);
+      color:var(--t2);font-size:.78rem;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:all var(--tr);flex-shrink:0;
     }
+    .hdr-clear:hover{border-color:var(--err);color:#fca5a5;background:rgb(239 68 68/.08);}
 
-    .online-dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: #34d399;
-      animation: pulse-dot 2s ease-in-out infinite;
+    /* ══════════════════════════════════════════════
+       MESSAGES
+    ══════════════════════════════════════════════ */
+    .messages{
+      flex:1;overflow-y:auto;
+      padding:22px 20px;
+      display:flex;flex-direction:column;gap:14px;
+      scroll-behavior:smooth;
+      position:relative;z-index:1;
     }
-
-    @keyframes pulse-dot {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%      { opacity:.5; transform:scale(.8); }
-    }
-
-    .header-sub {
-      font-size: 0.75rem; color: var(--text-muted);
-      margin-top: 1px;
-    }
-
-    .header-logo {
-      font-size: 0.7rem; font-weight: 700;
-      color: var(--text-muted); letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      flex-shrink: 0;
-    }
-
-    /* ════════════════════════════════════════════
-       MESSAGES AREA
-    ════════════════════════════════════════════ */
-    .messages {
-      flex: 1; overflow-y: auto;
-      padding: 20px 18px;
-      display: flex; flex-direction: column; gap: 12px;
-      scroll-behavior: smooth;
-    }
-
-    .messages::-webkit-scrollbar { width: 3px; }
-    .messages::-webkit-scrollbar-track { background: transparent; }
-    .messages::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
+    .messages::-webkit-scrollbar{width:3px;}
+    .messages::-webkit-scrollbar-track{background:transparent;}
+    .messages::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px;}
+    .messages::-webkit-scrollbar-thumb:hover{background:var(--bdl);}
 
     /* ── Welcome ── */
-    .welcome {
-      text-align: center;
-      padding: 20px 16px 8px;
-      animation: fadeUp .5s ease both;
+    .welcome{text-align:center;padding:18px 12px 6px;animation:fadeUp .55s ease both;}
+
+    .welcome-icon{
+      width:68px;height:68px;border-radius:var(--r-xl);
+      background:var(--s1);border:1px solid var(--bd);
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:1.9rem;color:var(--p4);margin-bottom:14px;
+      box-shadow:var(--glow),var(--sh-md);
+      animation:float 4s ease-in-out infinite;
+    }
+    @keyframes float{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-5px);}
     }
 
-    .welcome-icon-wrap {
-      width: 64px; height: 64px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.8rem;
-      color: var(--primary-400);
-      margin-bottom: 14px;
-      box-shadow: var(--shadow-glow);
+    .welcome h2{font-size:1.08rem;font-weight:800;color:var(--t0);margin-bottom:6px;}
+    .welcome .verse{
+      font-family:'Amiri',serif;font-size:.87rem;
+      color:var(--t1);line-height:1.85;
+      max-width:310px;margin:0 auto 10px;
+      padding:10px 16px;
+      background:var(--s0);border:1px solid var(--bd);
+      border-radius:var(--r-lg);border-right:3px solid var(--p5);
     }
+    .welcome .hint{font-size:.72rem;color:var(--t2);}
 
-    .welcome h2 {
-      font-size: 1.1rem; font-weight: 800;
-      color: var(--text-primary); margin-bottom: 6px;
+    /* ── Divider ── */
+    .divider{
+      display:flex;align-items:center;gap:10px;
+      color:var(--t2);font-size:.7rem;padding:2px 0;
     }
-
-    .welcome p {
-      font-size: 0.82rem; color: var(--text-secondary);
-      line-height: 1.75; max-width: 320px; margin: 0 auto;
-      font-family: 'Amiri', serif;
-    }
-
-    /* ── Date divider ── */
-    .divider {
-      display: flex; align-items: center; gap: 10px;
-      color: var(--text-muted); font-size: 0.72rem;
-      padding: 2px 0;
-    }
-    .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bd);}
 
     /* ── Message row ── */
-    .msg-row {
-      display: flex; align-items: flex-end; gap: 8px;
-      animation: fadeUp .3s ease both;
+    .msg-row{
+      display:flex;align-items:flex-end;gap:8px;
+      animation:fadeUp .28s ease both;
     }
-    .msg-row.user { flex-direction: row-reverse; }
-    .msg-row.bot  { flex-direction: row; }
+    .msg-row.user{flex-direction:row-reverse;}
 
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(12px); }
-      to   { opacity:1; transform:translateY(0); }
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(10px);}
+      to{opacity:1;transform:translateY(0);}
     }
 
     /* ── Avatar ── */
-    .msg-avatar {
-      width: 30px; height: 30px;
-      border-radius: var(--radius-sm);
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem;
+    .msg-av{
+      width:30px;height:30px;border-radius:var(--r-sm);
+      flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      font-size:.8rem;
+    }
+    .bot  .msg-av{background:#111113;border:1px solid var(--bd);color:var(--p4);box-shadow:var(--glow);}
+    .user .msg-av{background:var(--s1);border:1px solid var(--bd);color:var(--t1);}
+
+    /* ── Bubble ── */
+    .msg-wrap{display:flex;flex-direction:column;}
+    .user .msg-wrap{align-items:flex-end;}
+    .bot  .msg-wrap{align-items:flex-start;}
+
+    .bubble{
+      max-width:min(72%,440px);
+      padding:10px 15px;border-radius:var(--r-xl);
+      font-size:.875rem;line-height:1.72;word-break:break-word;
     }
 
-    .bot  .msg-avatar {
-      background: #111113;
-      border: 1px solid var(--border);
-      color: var(--primary-400);
-      box-shadow: var(--shadow-glow);
+    .user .bubble{
+      background:var(--ub);color:#fff;
+      border-bottom-left-radius:var(--r-sm);
+      box-shadow:0 4px 16px rgb(6 182 212/.22);
     }
-    .user .msg-avatar {
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
+    .bot .bubble{
+      background:var(--s1);color:var(--t0);
+      border:1px solid var(--bd);
+      border-bottom-right-radius:var(--r-sm);
     }
-
-    /* ── Wrap + bubble ── */
-    .msg-wrap { display: flex; flex-direction: column; }
-    .user .msg-wrap { align-items: flex-end; }
-    .bot  .msg-wrap { align-items: flex-start; }
-
-    .bubble {
-      max-width: min(70%, 420px);
-      padding: 10px 14px;
-      border-radius: var(--radius-xl);
-      font-size: 0.88rem;
-      line-height: 1.7;
-      word-break: break-word;
+    .bubble.error{
+      background:rgb(239 68 68/.1);
+      border-color:rgb(239 68 68/.3);
+      color:#fca5a5;
     }
 
-    .user .bubble {
-      background: var(--user-bubble);
-      color: #fff;
-      border-bottom-left-radius: var(--radius-sm);
-      box-shadow: 0 4px 14px rgb(6 182 212 / .25);
+    /* bold inside bot bubble */
+    .bot .bubble strong{color:var(--p4);}
+
+    /* ── Verse card inside bubble ── */
+    .verse-card{
+      margin-top:10px;
+      padding:10px 13px;
+      background:rgb(6 182 212/.06);
+      border:1px solid rgb(6 182 212/.18);
+      border-right:3px solid var(--p5);
+      border-radius:var(--r-md);
+      font-family:'Amiri',serif;
+      font-size:.82rem;color:var(--t1);
+      line-height:1.8;
+    }
+    .verse-card .ref{
+      display:block;margin-top:5px;
+      font-family:'Cairo',sans-serif;
+      font-size:.68rem;color:var(--p5);font-weight:700;
     }
 
-    .bot .bubble {
-      background: var(--bot-bubble);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-      border-bottom-right-radius: var(--radius-sm);
+    /* ── Page-link tip ── */
+    .page-tip{
+      margin-top:9px;
+      padding:7px 11px;
+      background:rgb(6 182 212/.07);
+      border:1px solid rgb(6 182 212/.18);
+      border-radius:var(--r-md);
+      font-size:.76rem;color:var(--p4);
+      display:flex;align-items:center;gap:8px;
+    }
+    .page-tip i{flex-shrink:0;font-size:.72rem;}
+
+    .msg-time{font-size:.63rem;color:var(--t2);margin-top:3px;padding:0 3px;}
+
+    /* ── Typing ── */
+    .typing-row{display:flex;align-items:flex-end;gap:8px;}
+    .typing-bub{
+      background:var(--s1);border:1px solid var(--bd);
+      border-radius:var(--r-xl);border-bottom-right-radius:var(--r-sm);
+      padding:13px 16px;display:flex;align-items:center;gap:4px;
+    }
+    .typing-bub span{
+      width:6px;height:6px;border-radius:50%;background:var(--p5);
+      animation:tdot 1.15s ease-in-out infinite;
+    }
+    .typing-bub span:nth-child(2){animation-delay:.2s;}
+    .typing-bub span:nth-child(3){animation-delay:.4s;}
+    @keyframes tdot{
+      0%,60%,100%{transform:translateY(0);opacity:.35;}
+      30%{transform:translateY(-6px);opacity:1;}
     }
 
-    .bubble.error {
-      background: rgb(239 68 68 / .1);
-      border-color: rgb(239 68 68 / .3);
-      color: #fca5a5;
+    /* ── Reaction bar ── */
+    .reaction-bar{
+      display:flex;align-items:center;gap:4px;
+      margin-top:4px;opacity:0;
+      transition:opacity var(--tr);
+    }
+    .msg-row:hover .reaction-bar{opacity:1;}
+
+    .react-btn{
+      width:24px;height:24px;border-radius:var(--r-sm);
+      background:var(--s0);border:1px solid var(--bd);
+      font-size:.72rem;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:all var(--tr);color:var(--t2);
+    }
+    .react-btn:hover{border-color:var(--p5);background:rgb(6 182 212/.08);color:var(--p4);}
+    .react-btn.active{border-color:var(--p5);background:rgb(6 182 212/.15);color:var(--p4);}
+
+    /* copy feedback */
+    .copy-toast{
+      position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+      background:var(--s1);border:1px solid var(--bd);
+      border-radius:var(--r-lg);padding:8px 16px;
+      font-size:.78rem;color:var(--t0);
+      box-shadow:var(--sh-lg);
+      opacity:0;pointer-events:none;
+      transition:opacity .25s;z-index:100;
+    }
+    .copy-toast.show{opacity:1;}
+
+    /* ══════════════════════════════════════════════
+       SUGGESTIONS
+    ══════════════════════════════════════════════ */
+    .suggestions{
+      padding:0 18px 12px;
+      display:flex;flex-wrap:wrap;gap:7px;
+      flex-shrink:0;position:relative;z-index:1;
+      transition:opacity .25s,max-height .3s,padding .3s;
+      overflow:hidden;
     }
 
-    /* ── Page tip inside bot bubble ── */
-    .page-tip {
-      margin-top: 10px;
-      padding: 8px 12px;
-      background: rgb(6 182 212 / .08);
-      border: 1px solid rgb(6 182 212 / .2);
-      border-radius: var(--radius-md);
-      font-size: 0.78rem;
-      color: var(--primary-400);
-      display: flex; align-items: center; gap: 8px;
+    .sug{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--s0);border:1px solid var(--bd);
+      border-radius:var(--r-lg);padding:6px 12px;
+      color:var(--t1);font-family:'Cairo',sans-serif;
+      font-size:.76rem;font-weight:600;cursor:pointer;
+      transition:all var(--tr);white-space:nowrap;
     }
-    .page-tip i { font-size: 0.75rem; flex-shrink: 0; }
-
-    .msg-time {
-      font-size: 0.65rem; color: var(--text-muted);
-      margin-top: 3px; padding: 0 3px;
+    .sug i{font-size:.7rem;color:var(--p5);}
+    .sug:hover{
+      border-color:var(--p5);color:var(--p4);
+      background:rgb(6 182 212/.06);
+      transform:translateY(-2px);box-shadow:var(--glow);
     }
+    .sug:active{transform:translateY(0);}
 
-    /* ── Typing indicator ── */
-    .typing-row { display: flex; align-items: flex-end; gap: 8px; }
-
-    .typing-bubble {
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      border-bottom-right-radius: var(--radius-sm);
-      padding: 12px 16px;
-      display: flex; align-items: center; gap: 4px;
-    }
-
-    .typing-bubble span {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--primary-500);
-      animation: bounce 1.2s ease-in-out infinite;
-    }
-    .typing-bubble span:nth-child(2) { animation-delay: .2s; }
-    .typing-bubble span:nth-child(3) { animation-delay: .4s; }
-
-    @keyframes bounce {
-      0%,60%,100% { transform:translateY(0); opacity:.4; }
-      30%          { transform:translateY(-6px); opacity:1; }
-    }
-
-    /* ════════════════════════════════════════════
-       QUICK SUGGESTIONS
-    ════════════════════════════════════════════ */
-    .suggestions {
-      padding: 0 18px 10px;
-      display: flex; flex-wrap: wrap; gap: 7px;
-      flex-shrink: 0;
-    }
-
-    .sug-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 6px 13px;
-      color: var(--text-secondary);
-      font-family: 'Cairo', sans-serif;
-      font-size: 0.78rem; font-weight: 600;
-      cursor: pointer;
-      transition: all var(--tr);
-      white-space: nowrap;
-    }
-
-    .sug-btn i { font-size: 0.72rem; color: var(--primary-500); }
-
-    .sug-btn:hover {
-      border-color: var(--primary-500);
-      color: var(--primary-400);
-      background: rgb(6 182 212 / .06);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════════
        INPUT AREA
-    ════════════════════════════════════════════ */
-    .input-area {
-      padding: 12px 16px 14px;
-      background: var(--bg-tertiary);
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
+    ══════════════════════════════════════════════ */
+    .input-area{
+      padding:12px 16px 15px;
+      background:linear-gradient(0deg,var(--bg2) 0%,var(--bg1) 100%);
+      border-top:1px solid var(--bd);flex-shrink:0;
+      position:relative;z-index:1;
     }
 
-    .input-row {
-      display: flex; align-items: flex-end; gap: 8px;
+    .input-row{display:flex;align-items:flex-end;gap:8px;}
+    .input-wrap{flex:1;position:relative;}
+
+    #userInput{
+      width:100%;background:var(--s0);
+      border:1.5px solid var(--bd);border-radius:var(--r-xl);
+      padding:10px 46px 10px 14px;
+      color:var(--t0);font-family:'Cairo',sans-serif;
+      font-size:.875rem;resize:none;max-height:120px;
+      line-height:1.55;outline:none;
+      transition:border-color var(--tr),box-shadow var(--tr);
+    }
+    #userInput::placeholder{color:var(--t2);}
+    #userInput:focus{
+      border-color:var(--p6);
+      box-shadow:0 0 0 3px rgb(6 182 212/.09);
     }
 
-    .input-wrap { flex: 1; position: relative; }
+    .char-badge{
+      position:absolute;bottom:9px;left:14px;
+      font-size:.62rem;color:var(--t2);pointer-events:none;
+      transition:color var(--tr);
+    }
+    .char-badge.warn{color:#fca5a5;}
 
-    #userInput {
-      width: 100%;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 10px 48px 10px 14px;
-      color: var(--text-primary);
-      font-family: 'Cairo', sans-serif;
-      font-size: 0.88rem;
-      resize: none; max-height: 110px;
-      line-height: 1.55; outline: none;
-      transition: border-color var(--tr), box-shadow var(--tr);
+    #sendBtn{
+      width:44px;height:44px;border-radius:var(--r-md);
+      background:var(--p5);border:none;cursor:pointer;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:.95rem;
+      transition:all var(--tr);
+      box-shadow:0 4px 14px rgb(6 182 212/.28);
+    }
+    #sendBtn:hover:not(:disabled){
+      background:var(--p4);transform:scale(1.06);
+      box-shadow:0 6px 20px rgb(6 182 212/.45);
+    }
+    #sendBtn:active:not(:disabled){transform:scale(.94);}
+    #sendBtn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
+
+    .footer-hint{
+      text-align:center;margin-top:7px;
+      font-size:.66rem;color:var(--t2);
+    }
+    .footer-hint kbd{
+      background:var(--s1);border:1px solid var(--bd);
+      border-radius:4px;padding:1px 5px;
+      font-size:.63rem;font-family:inherit;color:var(--t1);
     }
 
-    #userInput::placeholder { color: var(--text-muted); }
-
-    #userInput:focus {
-      border-color: var(--primary-600);
-      box-shadow: 0 0 0 3px rgb(6 182 212 / .08);
+    /* ══════════════════════════════════════════════
+       SKELETON loader (first load)
+    ══════════════════════════════════════════════ */
+    .skel{
+      height:14px;border-radius:4px;
+      background:linear-gradient(90deg,var(--s1) 25%,var(--s2) 50%,var(--s1) 75%);
+      background-size:200% 100%;
+      animation:shimmer 1.4s infinite;
+    }
+    @keyframes shimmer{
+      0%{background-position:200% 0;}
+      100%{background-position:-200% 0;}
     }
 
-    .char-badge {
-      position: absolute; bottom: 9px; left: 14px;
-      font-size: 0.65rem; color: var(--text-muted);
-      pointer-events: none;
-      transition: color var(--tr);
-    }
-    .char-badge.warn { color: #f87171; }
-
-    /* ── Send button ── */
-    #sendBtn {
-      width: 42px; height: 42px;
-      border-radius: var(--radius-md);
-      background: var(--primary-500);
-      border: none; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 0.95rem;
-      transition: all var(--tr);
-      box-shadow: 0 4px 12px rgb(6 182 212 / .3);
-    }
-
-    #sendBtn:hover:not(:disabled) {
-      background: var(--primary-400);
-      transform: scale(1.05);
-      box-shadow: 0 6px 18px rgb(6 182 212 / .45);
-    }
-
-    #sendBtn:active:not(:disabled) { transform: scale(.95); }
-
-    #sendBtn:disabled {
-      opacity: .35; cursor: not-allowed; transform: none;
-      box-shadow: none;
-    }
-
-    .footer-hint {
-      text-align: center; margin-top: 7px;
-      font-size: 0.68rem; color: var(--text-muted);
-    }
-    .footer-hint kbd {
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 4px; padding: 1px 5px;
-      font-size: 0.65rem; font-family: inherit;
-      color: var(--text-secondary);
-    }
-
-    /* ════════════════════════════════════════════
+    /* ══════════════════════════════════════════════
        RESPONSIVE
-    ════════════════════════════════════════════ */
-    @media (max-width: 520px) {
-      .app { padding: 0; }
-      .chat-card { border-radius: 0; height: 100dvh; max-width: 100%; }
-      .bubble { max-width: 82%; }
-      .header-logo { display: none; }
+    ══════════════════════════════════════════════ */
+    @media(max-width:520px){
+      .app{padding:0;}
+      .chat-card{border-radius:0;height:100dvh;max-width:100%;}
+      .bubble{max-width:85%;}
+      .hdr-logo,.hdr-clear{display:none;}
     }
   </style>
 </head>
 <body>
+
 <div class="app">
-  <div class="chat-card">
+ <div class="chat-card">
 
-    <!-- ── Header ── -->
-    <header class="chat-header">
-      <div class="header-avatar">
-        <i class="fas fa-cross"></i>
-      </div>
-      <div class="header-info">
-        <div class="header-name">
-          مساعدك الروحي
-          <span class="online-badge">
-            <span class="online-dot"></span>
-            متاح
-          </span>
-        </div>
-        <div class="header-sub">بيساعدك تتعرف على المنصة وترحلتك الروحية</div>
-      </div>
-      <div class="header-logo">Daily Bible SPS</div>
-    </header>
-
-    <!-- ── Messages ── -->
-    <div class="messages" id="messages">
-      <div class="welcome">
-        <div class="welcome-icon-wrap">
-          <i class="fas fa-dove"></i>
-        </div>
-        <h2>أهلاً وسهلاً بيك! 👋</h2>
-        <p>«ابدأ يومك بكلمة ربنا، وخلّي الإنجيل يكون صديقك اليومي»</p>
-      </div>
-      <div class="divider">ابدأ المحادثة</div>
+  <!-- ══ HEADER ══ -->
+  <header class="chat-header">
+    <div class="hdr-avatar">
+      <div class="hdr-avatar-inner"><i class="fas fa-cross"></i></div>
+      <span class="hdr-pulse"></span>
     </div>
-
-    <!-- ── Quick suggestions ── -->
-    <div class="suggestions" id="suggestions">
-      <button class="sug-btn" onclick="sendSuggestion(this)">
-        <i class="fas fa-book-open"></i> إيه القراءة النهارده؟
-      </button>
-      <button class="sug-btn" onclick="sendSuggestion(this)">
-        <i class="fas fa-running"></i> إزاي أشترك في الماراثون؟
-      </button>
-      <button class="sug-btn" onclick="sendSuggestion(this)">
-        <i class="fas fa-heart"></i> محتاج تشجيع
-      </button>
-      <button class="sug-btn" onclick="sendSuggestion(this)">
-        <i class="fas fa-moon"></i> آية قبل النوم
-      </button>
-      <button class="sug-btn" onclick="sendSuggestion(this)">
-        <i class="fas fa-star"></i> إيه التحديات المتاحة؟
-      </button>
-      <button class="sug-btn" onclick="sendSuggestion(this)">
-        <i class="fas fa-smile"></i> حاسس بحاجة تقيلة
-      </button>
-    </div>
-
-    <!-- ── Input ── -->
-    <div class="input-area">
-      <div class="input-row">
-        <div class="input-wrap">
-          <textarea
-            id="userInput"
-            rows="1"
-            maxlength="500"
-            placeholder="اكتب رسالتك هنا..."
-            aria-label="رسالتك"
-          ></textarea>
-          <span class="char-badge" id="charBadge"></span>
-        </div>
-        <button id="sendBtn" onclick="sendMessage()" disabled aria-label="إرسال">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+    <div class="hdr-info">
+      <div class="hdr-name">
+        مساعدك الروحي
+        <span class="badge"><i class="fas fa-bolt" style="font-size:.55rem;margin-left:2px;"></i> AI</span>
       </div>
-      <p class="footer-hint">
-        <kbd>Enter</kbd> للإرسال &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> لسطر جديد
-      </p>
+      <div class="hdr-sub">دليلك على المنصة ورفيقك في رحلتك الروحية</div>
     </div>
+    <div class="hdr-logo">Daily Bible SPS</div>
+    <button class="hdr-clear" onclick="clearChat()" title="مسح المحادثة">
+      <i class="fas fa-trash-alt"></i>
+    </button>
+  </header>
 
-  </div><!-- /chat-card -->
-</div><!-- /app -->
+  <!-- ══ MESSAGES ══ -->
+  <div class="messages" id="messages">
+    <div class="welcome" id="welcomeBlock">
+      <div class="welcome-icon"><i class="fas fa-dove"></i></div>
+      <h2>أهلاً وسهلاً بيك! 👋</h2>
+      <div class="verse">
+        «ابدأ يومك بكلمة ربنا، وخلّي الإنجيل يكون صديقك اليومي»
+      </div>
+      <p class="hint">اسألني عن أي صفحة في المنصة، أو شاركني حاجة في قلبك</p>
+    </div>
+    <div class="divider" id="divider">اليوم</div>
+  </div>
+
+  <!-- ══ SUGGESTIONS ══ -->
+  <div class="suggestions" id="suggestions">
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-book-open"></i>إيه القراءة النهارده؟</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-running"></i>إزاي أشترك في الماراثون؟</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-star"></i>إيه التحديات المتاحة؟</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-heart"></i>محتاج تشجيع</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-moon"></i>آية هادية قبل النوم</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-smile-beam"></i>حاسس بحاجة تقيلة</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-feather-alt"></i>أبدأ مجلتي الروحية إزاي؟</button>
+    <button class="sug" onclick="sendSug(this)"><i class="fas fa-gamepad"></i>اللعبة بتشتغل إزاي؟</button>
+  </div>
+
+  <!-- ══ INPUT ══ -->
+  <div class="input-area">
+    <div class="input-row">
+      <div class="input-wrap">
+        <textarea id="userInput" rows="1" maxlength="500"
+          placeholder="اكتب رسالتك هنا..." aria-label="رسالتك"></textarea>
+        <span class="char-badge" id="charBadge"></span>
+      </div>
+      <button id="sendBtn" onclick="sendMessage()" disabled aria-label="إرسال">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+    <p class="footer-hint">
+      <kbd>Enter</kbd> للإرسال &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> لسطر جديد
+    </p>
+  </div>
+
+ </div>
+</div>
+
+<!-- copy toast -->
+<div class="copy-toast" id="copyToast">تم النسخ</div>
 
 <script>
-/* ════════════════════════════════════════════════════
-   CONFIG
-════════════════════════════════════════════════════ */
-const GROQ_API_KEY = "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";
-const MODEL        = "llama-3.3-70b-versatile";
+/* ══════════════════════════════════════════════════════
+   CONFIG  ←  PHP proxy is the only endpoint now
+══════════════════════════════════════════════════════ */
+const API_ENDPOINT = "chat.php";   // ← calls chat.php on your server
 const MAX_CHARS    = 500;
 
-/* ── Platform knowledge: pages + purposes ── */
-const PLATFORM_CONTEXT = `
-أنت مساعد روحاني ذكي وودود من منصة "Daily Bible SPS" التعليمية الروحية للطلاب.
-بتتكلم باللهجة المصرية العامية — دافئ، مرح، بشوش، وبسيط.
-ردودك قصيرة ومفيدة (3-5 جمل). استخدم الكتاب المقدس كمرجع عند الحاجة.
+/* ══════════════════════════════════════════════════════
+   PAGE MAP — for smart tips
+══════════════════════════════════════════════════════ */
+const PAGES = {
+  "readings.php":          { label:"القراءات اليومية",         icon:"fa-book-open",     color:"#06b6d4" },
+  "marathon.php":          { label:"ماراثون الكتاب المقدس",   icon:"fa-running",       color:"#8b5cf6" },
+  "teachers-marathon.php": { label:"ماراثون المدرسين",         icon:"fa-chalkboard-teacher", color:"#f59e0b" },
+  "challenges.php":        { label:"التحديات الروحية",         icon:"fa-star",          color:"#f59e0b" },
+  "journal.php":           { label:"مجلتي الروحية",            icon:"fa-feather-alt",   color:"#10b981" },
+  "mood.php":              { label:"الإرشاد المزاجي",          icon:"fa-smile-beam",    color:"#06b6d4" },
+  "sleep-mode.php":        { label:"وقت الهدوء",               icon:"fa-moon",          color:"#8b5cf6" },
+  "gratitude-jar.php":     { label:"جرة البركات",              icon:"fa-jar",           color:"#f59e0b" },
+  "community.php":         { label:"المجتمع",                  icon:"fa-users",         color:"#10b981" },
+  "student-dashboard.php": { label:"لوحة الطالب",              icon:"fa-tachometer-alt",color:"#06b6d4" },
+  "guess-the-story.html":  { label:"خمّن القصة",               icon:"fa-gamepad",       color:"#f59e0b" },
+  "teacher-bible-study.php":{ label:"دراسة الكتاب للمدرسين",   icon:"fa-graduation-cap",color:"#8b5cf6" },
+};
 
-صفحات المنصة اللي بتعرفها كويس:
-
-1. القراءات اليومية (readings.php):
-   - الطالب بيقرأ آيات من الكتاب المقدس محددة ليه حسب مرحلته
-   - في أسئلة بعد كل قراءة (اختيار من متعدد وأسئلة مفتوحة)
-   - بتجمع نقاط على كل قراءة وإجابة صح
-
-2. ماراثون الكتاب المقدس (marathon.php):
-   - تحدي جماعي لقراءة الكتاب المقدس كامل
-   - بتتابع التقدم على شكل نسبة مئوية وأيام
-   - في ليدربورد للطلاب
-
-3. ماراثون المدرسين (teachers-marathon.php):
-   - نفس فكرة الماراثون بس للمدرسين
-
-4. نسخ ودراسة الكتاب للمدرسين (teacher-bible-study.php):
-   - منصة متكاملة للمدرسين لنسخ ودراسة الكتاب المقدس
-
-5. لوحة الطالب (student-dashboard.php):
-   - بتشوف فيها نقاطك، إنجازاتك، streak القراءة
-   - في هيتماب للأيام اللي قرأت فيها
-   - بيانات أسبوعية وشهرية
-
-6. التحديات الروحية (challenges.php):
-   - تحديات روحية ممتعة لبناء عادات إيمانية يومية
-   - كل تحدي ليه نقاط وبادج خاص
-
-7. مجلتي الروحية (journal.php):
-   - بتكتب فيها صلواتك وتأملاتك الشخصية
-   - خاصة بيك بس، زي دفتر يومياتك مع ربنا
-
-8. نظام الإرشاد المزاجي (mood.php):
-   - بتختار حالتك المزاجية
-   - المنصة بتديك آيات وتأملات مخصصة لمزاجك
-
-9. وقت الهدوء / Sleep Mode (sleep-mode.php):
-   - رفيقك الروحي في نهاية اليوم
-   - آية الليل وتأمل هادئ قبل النوم
-   - موسيقى هادئة
-
-10. جرة البركات (gratitude-jar.php):
-    - بتكتب فيها الأشياء اللي شاكر ربنا عليها
-    - زي جرة مليانة شكر لربنا
-
-11. المجتمع (community.php):
-    - بتشارك مع الطلاب التانيين
-    - نقاشات روحية وتشجيع متبادل
-
-12. خمّن القصة (guess-the-story.php):
-    - لعبة ممتعة — بتخمن قصة من الكتاب المقدس من رموز
-
-لو حد سألك عن أي صفحة، اشرحلهم إيه بتعملوا فيها وازاي يستفادوا منها.
-لو حد محتاج مساعدة روحية، ساعده بآية أو تأمل مناسب.
-لو حد في ضيقة أو حزين، كن مع معاه بدفء ورقة.
-متتكلمش عن أي حاجة خارج الروحانيات والمنصة.
-`;
-
-/* ════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════
    DOM
-════════════════════════════════════════════════════ */
-const messagesEl    = document.getElementById("messages");
-const inputEl       = document.getElementById("userInput");
-const sendBtn       = document.getElementById("sendBtn");
-const charBadgeEl   = document.getElementById("charBadge");
-const suggestionsEl = document.getElementById("suggestions");
+══════════════════════════════════════════════════════ */
+const msgEl    = document.getElementById("messages");
+const inputEl  = document.getElementById("userInput");
+const sendBtn  = document.getElementById("sendBtn");
+const charEl   = document.getElementById("charBadge");
+const sugEl    = document.getElementById("suggestions");
+const toastEl  = document.getElementById("copyToast");
 
 let isWaiting = false;
 
-/* ════════════════════════════════════════════════════
-   INPUT HANDLING
-════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   INPUT
+══════════════════════════════════════════════════════ */
 inputEl.addEventListener("input", () => {
-  const len = inputEl.value.length;
-  charBadgeEl.textContent = len > 400 ? `${len}/${MAX_CHARS}` : "";
-  charBadgeEl.classList.toggle("warn", len > 460);
-  sendBtn.disabled = len === 0 || isWaiting;
+  const n = inputEl.value.length;
+  charEl.textContent = n > 400 ? `${n}/${MAX_CHARS}` : "";
+  charEl.classList.toggle("warn", n > 460);
+  sendBtn.disabled = n === 0 || isWaiting;
   autoGrow();
 });
 
 inputEl.addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    if (!sendBtn.disabled) sendMessage();
-  }
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
 });
 
 function autoGrow() {
   inputEl.style.height = "auto";
-  inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + "px";
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
 }
 
-/* ════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════
    SUGGESTIONS
-════════════════════════════════════════════════════ */
-function sendSuggestion(btn) {
-  // strip icon text — get only the Arabic text
-  const text = btn.innerText.trim().replace(/^[\s\S]*?\s/, '').trim();
-  inputEl.value = btn.querySelector('i') ? btn.innerText.replace(btn.querySelector('i').innerText || '', '').trim() : btn.innerText.trim();
-  // simpler: just use the full button text minus leading whitespace
+══════════════════════════════════════════════════════ */
+function sendSug(btn) {
   inputEl.value = btn.innerText.trim();
   inputEl.dispatchEvent(new Event("input"));
   sendMessage();
 }
 
 function hideSuggestions() {
-  if (suggestionsEl && suggestionsEl.style.display !== "none") {
-    suggestionsEl.style.transition = "opacity .25s, max-height .3s";
-    suggestionsEl.style.opacity = "0";
-    suggestionsEl.style.maxHeight = "0";
-    suggestionsEl.style.padding = "0";
-    setTimeout(() => suggestionsEl.style.display = "none", 300);
-  }
+  if (!sugEl || sugEl.dataset.hidden) return;
+  sugEl.dataset.hidden = "1";
+  sugEl.style.transition = "opacity .25s, max-height .3s, padding .3s";
+  sugEl.style.opacity = "0";
+  sugEl.style.maxHeight = "0";
+  sugEl.style.paddingTop = "0";
+  sugEl.style.paddingBottom = "0";
 }
 
-/* ════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════
    HELPERS
-════════════════════════════════════════════════════ */
-function getTime() {
-  return new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+══════════════════════════════════════════════════════ */
+function now() {
+  return new Date().toLocaleTimeString("ar-EG", { hour:"2-digit", minute:"2-digit" });
 }
 
-function escHtml(s) {
-  return s
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-    .replace(/\n/g,"<br>");
+function esc(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
 }
 
 function scrollBottom() {
-  messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: "smooth" });
+  msgEl.scrollTo({ top: msgEl.scrollHeight, behavior: "smooth" });
 }
 
-/* ════════════════════════════════════════════════════
-   DETECT PAGE MENTION → add tip
-════════════════════════════════════════════════════ */
-const PAGE_MAP = {
-  "readings.php":         { label: "القراءات اليومية",   icon: "fa-book-open" },
-  "marathon.php":         { label: "ماراثون الكتاب",      icon: "fa-running" },
-  "challenges.php":       { label: "التحديات الروحية",    icon: "fa-star" },
-  "journal.php":          { label: "مجلتي الروحية",       icon: "fa-feather-alt" },
-  "mood.php":             { label: "الإرشاد المزاجي",     icon: "fa-smile" },
-  "sleep-mode.php":       { label: "وقت الهدوء",          icon: "fa-moon" },
-  "gratitude-jar.php":    { label: "جرة البركات",         icon: "fa-jar" },
-  "community.php":        { label: "المجتمع",             icon: "fa-users" },
-  "student-dashboard.php":{ label: "لوحة الطالب",         icon: "fa-tachometer-alt" },
-  "guess-the-story.html": { label: "خمّن القصة",          icon: "fa-gamepad" },
-};
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(() => toastEl.classList.remove("show"), 2000);
+}
 
-function buildPageTip(text) {
-  for (const [href, info] of Object.entries(PAGE_MAP)) {
-    if (text.includes(href) || text.includes(info.label)) {
-      return `<div class="page-tip">
-        <i class="fas ${info.icon}"></i>
-        <span>روح على صفحة <strong>${info.label}</strong> مباشرة من القائمة الرئيسية ☝️</span>
+/* ══════════════════════════════════════════════════════
+   PAGE TIPS — detect page mentions in bot reply
+══════════════════════════════════════════════════════ */
+function extractTip(text) {
+  for (const [href, p] of Object.entries(PAGES)) {
+    if (text.includes(href) || text.includes(p.label)) {
+      return `<div class="page-tip" style="border-color:${p.color}33;color:${p.color};">
+        <i class="fas ${p.icon}"></i>
+        <span>افتح صفحة <strong>${p.label}</strong> من القائمة الرئيسية</span>
       </div>`;
     }
   }
   return "";
 }
 
-/* ════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════
+   FORMAT BOT TEXT — **bold**, آية مع مرجع
+══════════════════════════════════════════════════════ */
+function formatBot(raw) {
+  let s = esc(raw);
+  // **bold** → <strong>
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // detect verse pattern like: "متى ١١:٢٨" or "يوحنا 3:16"
+  const verseMatch = s.match(/[«""](.{10,120})[»""]\s*[-–—]?\s*([\u0600-\u06FF\w]+\s+[\d:٠-٩]+)/);
+  if (verseMatch) {
+    s = s.replace(verseMatch[0], `<div class="verse-card">${verseMatch[1]}<span class="ref"><i class="fas fa-book-open" style="font-size:.6rem;margin-left:4px;"></i>${verseMatch[2]}</span></div>`);
+  }
+  return s;
+}
+
+/* ══════════════════════════════════════════════════════
    APPEND MESSAGE
-════════════════════════════════════════════════════ */
-function appendMessage(text, role, isError = false) {
+══════════════════════════════════════════════════════ */
+function appendMsg(text, role, isError = false) {
   hideSuggestions();
 
   const row = document.createElement("div");
   row.className = `msg-row ${role}`;
 
-  const avatarIcon = role === "bot"
-    ? `<i class="fas fa-cross"></i>`
-    : `<i class="fas fa-user"></i>`;
+  const icon = role === "bot" ? "fa-cross" : "fa-user";
+  const content = role === "bot" && !isError
+    ? formatBot(text) + extractTip(text)
+    : esc(text);
+  const ecls = isError ? " error" : "";
 
-  const tip = role === "bot" && !isError ? buildPageTip(text) : "";
-  const errorClass = isError ? " error" : "";
+  // reaction bar only for bot
+  const reactions = role === "bot" && !isError ? `
+    <div class="reaction-bar">
+      <button class="react-btn" onclick="copyMsg(this)" title="نسخ"><i class="fas fa-copy"></i></button>
+      <button class="react-btn" onclick="reactLike(this)" title="مفيد"><i class="fas fa-thumbs-up"></i></button>
+    </div>` : "";
 
   row.innerHTML = `
-    <div class="msg-avatar">${avatarIcon}</div>
+    <div class="msg-av"><i class="fas ${icon}"></i></div>
     <div class="msg-wrap">
-      <div class="bubble${errorClass}">${escHtml(text)}${tip}</div>
-      <span class="msg-time">${getTime()}</span>
+      <div class="bubble${ecls}">${content}</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="msg-time">${now()}</span>
+        ${reactions}
+      </div>
     </div>`;
 
-  messagesEl.appendChild(row);
+  msgEl.appendChild(row);
   scrollBottom();
+  return row;
 }
 
-/* ════════════════════════════════════════════════════
+function copyMsg(btn) {
+  const bubble = btn.closest(".msg-wrap").querySelector(".bubble");
+  navigator.clipboard.writeText(bubble.innerText).then(() => showToast("تم النسخ ✓"));
+}
+
+function reactLike(btn) {
+  btn.classList.toggle("active");
+  btn.querySelector("i").className = btn.classList.contains("active")
+    ? "fas fa-thumbs-up" : "fas fa-thumbs-up";
+}
+
+/* ══════════════════════════════════════════════════════
    TYPING INDICATOR
-════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════ */
 function showTyping() {
   const row = document.createElement("div");
-  row.className = "typing-row"; row.id = "typing-row";
+  row.id = "tyRow"; row.className = "typing-row";
   row.innerHTML = `
-    <div class="msg-avatar" style="width:30px;height:30px;border-radius:var(--radius-sm);background:#111113;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--primary-400);font-size:.85rem;flex-shrink:0;">
+    <div class="msg-av" style="width:30px;height:30px;border-radius:var(--r-sm);background:#111113;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;color:var(--p4);font-size:.8rem;flex-shrink:0;">
       <i class="fas fa-cross"></i>
     </div>
-    <div class="typing-bubble">
-      <span></span><span></span><span></span>
-    </div>`;
-  messagesEl.appendChild(row);
+    <div class="typing-bub"><span></span><span></span><span></span></div>`;
+  msgEl.appendChild(row);
   scrollBottom();
 }
+function hideTyping() { document.getElementById("tyRow")?.remove(); }
 
-function hideTyping() {
-  document.getElementById("typing-row")?.remove();
+/* ══════════════════════════════════════════════════════
+   CLEAR CHAT
+══════════════════════════════════════════════════════ */
+function clearChat() {
+  if (!confirm("تمسح المحادثة كلها؟")) return;
+  const items = msgEl.querySelectorAll(".msg-row, .typing-row");
+  items.forEach(el => el.remove());
+  if (sugEl) {
+    delete sugEl.dataset.hidden;
+    sugEl.removeAttribute("style");
+  }
 }
 
-/* ════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════
    SEND
-════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════ */
 async function sendMessage() {
   const text = inputEl.value.trim();
   if (!text || isWaiting) return;
@@ -774,19 +735,19 @@ async function sendMessage() {
   sendBtn.disabled = true;
   inputEl.value = "";
   inputEl.style.height = "auto";
-  charBadgeEl.textContent = "";
+  charEl.textContent = "";
 
-  appendMessage(text, "user");
+  appendMsg(text, "user");
   showTyping();
 
   try {
-    const reply = await callGroq(text);
+    const reply = await callProxy(text);
     hideTyping();
-    appendMessage(reply, "bot");
+    appendMsg(reply, "bot");
   } catch (err) {
     hideTyping();
-    appendMessage("حصلت مشكلة بسيطة مش هقدر أرد دلوقتي... جرب تاني 🙏", "bot", true);
-    console.error("Groq error:", err);
+    appendMsg("حصلت مشكلة بسيطة مش هقدر أرد دلوقتي... جرب تاني 🙏", "bot", true);
+    console.error("Chat error:", err);
   } finally {
     isWaiting = false;
     sendBtn.disabled = inputEl.value.trim().length === 0;
@@ -794,35 +755,23 @@ async function sendMessage() {
   }
 }
 
-/* ════════════════════════════════════════════════════
-   GROQ API
-════════════════════════════════════════════════════ */
-async function callGroq(userMessage) {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+/* ══════════════════════════════════════════════════════
+   PHP PROXY CALL
+══════════════════════════════════════════════════════ */
+async function callProxy(message) {
+  const res = await fetch(API_ENDPOINT, {
     method: "POST",
-    headers: {
-      "Content-Type":  "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 450,
-      temperature: 0.78,
-      messages: [
-        { role: "system", content: PLATFORM_CONTEXT },
-        { role: "user",   content: userMessage }
-      ]
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message })
   });
 
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(e?.error?.message || `HTTP ${res.status}`);
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error || `HTTP ${res.status}`);
   }
 
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content?.trim()
-    || "مش عارف أرد دلوقتي، جرب تاني 🙏";
+  return data.reply || "مش عارف أرد دلوقتي، جرب تاني 🙏";
 }
 </script>
 </body>
