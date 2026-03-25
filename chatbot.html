@@ -167,67 +167,24 @@
       </div>
     </div>
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeBtn = document.getElementById("close-btn");
-        const sendBtn = document.getElementById("send-btn");
-        const chatBotInput = document.getElementById("chatbot-input");
-        const chatbotIcon = document.getElementById("chatbot-icon");
+      // ========== CONFIGURATION ==========
+      // Replace with your own Gemini API key if this one is rate-limited
+      const API_KEY = "AIzaSyA_YL-q0JRnvrFi8VLC8osX22nP6bDgO0M";
+      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
-        // Open chat
-        chatbotIcon.addEventListener("click", () => {
-          chatbotContainer.classList.remove("hidden");
-          chatbotIcon.style.display = "none";
-        });
+      // Retry settings
+      const MAX_RETRIES = 3;
+      const BASE_DELAY = 1000; // 1 second
 
-        // Close chat
-        closeBtn.addEventListener("click", () => {
-          chatbotContainer.classList.add("hidden");
-          chatbotIcon.style.display = "flex";
-        });
+      // ========== DOM Elements ==========
+      let chatbotContainer, closeBtn, sendBtn, chatBotInput, chatbotIcon;
 
-        // Send message on button click
-        sendBtn.addEventListener("click", sendMessage);
-
-        // Send message on Enter key
-        chatBotInput.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") sendMessage();
-        });
-      });
-
-      async function sendMessage() {
-        const inputField = document.getElementById("chatbot-input");
-        const userMessage = inputField.value.trim();
-        if (!userMessage) return;
-
-        // Clear input and append user message
-        inputField.value = "";
-        appendMessage("user", userMessage);
-
-        // Show loading indicator
-        const loadingId = appendLoadingMessage();
-
-        try {
-          const botReply = await getBotResponse(userMessage);
-          // Remove loading message and add actual reply
-          removeLoadingMessage(loadingId);
-          appendMessage("bot", botReply);
-        } catch (error) {
-          removeLoadingMessage(loadingId);
-          let errorMsg = "Sorry, I'm having trouble responding. Please try again.";
-          if (error.message === "429") {
-            errorMsg = "Too many requests. Please wait a moment and try again.";
-          } else if (error.message === "network") {
-            errorMsg = "Network error. Please check your connection.";
-          }
-          appendMessage("bot", errorMsg);
-        }
-      }
-
-      function appendMessage(sender, message) {
+      // ========== Helper Functions ==========
+      function appendMessage(sender, message, isError = false) {
         const messageContainer = document.getElementById("chatbot-messages");
         const messageElement = document.createElement("div");
         messageElement.classList.add("message", sender);
+        if (isError) messageElement.style.backgroundColor = "#7a2e2e";
         messageElement.textContent = message;
         messageContainer.appendChild(messageElement);
         messageContainer.scrollTop = messageContainer.scrollHeight;
@@ -250,46 +207,114 @@
         if (loadingEl) loadingEl.remove();
       }
 
-      async function getBotResponse(userMessage) {
-        const API_KEY = "AIzaSyA_YL-q0JRnvrFi8VLC8osX22nP6bDgO0M";
-        // Corrected URL: no space, proper colon
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-
+      // Retry logic with exponential backoff
+      async function fetchWithRetry(url, options, retries = MAX_RETRIES, delay = BASE_DELAY) {
         try {
-          const response = await fetch(API_URL, {
+          const response = await fetch(url, options);
+          if (response.status === 429 && retries > 0) {
+            // Rate limit - wait and retry
+            const waitTime = delay * Math.pow(2, MAX_RETRIES - retries);
+            console.log(`Rate limited. Retrying in ${waitTime}ms... (${retries} retries left)`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            return fetchWithRetry(url, options, retries - 1, delay);
+          }
+          return response;
+        } catch (err) {
+          if (retries > 0) {
+            console.log(`Network error. Retrying... (${retries} retries left)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return fetchWithRetry(url, options, retries - 1, delay);
+          }
+          throw err;
+        }
+      }
+
+      async function getBotResponse(userMessage) {
+        try {
+          const response = await fetchWithRetry(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              contents: [
-                {
-                  parts: [{ text: userMessage }],
-                },
-              ],
+              contents: [{ parts: [{ text: userMessage }] }],
             }),
           });
 
-          if (response.status === 429) {
-            throw new Error("429");
-          }
-
           if (!response.ok) {
-            throw new Error("network");
+            // If still failing after retries, throw a user-friendly error
+            if (response.status === 429) throw new Error("rate_limit");
+            throw new Error("api_error");
           }
 
           const data = await response.json();
-
           if (!data.candidates || !data.candidates.length) {
             throw new Error("no_response");
           }
 
-          const botMessage = data.candidates[0].content.parts[0].text;
-          return botMessage;
+          return data.candidates[0].content.parts[0].text;
         } catch (error) {
-          if (error.message === "429") throw error;
-          if (error.message === "network") throw error;
-          throw new Error("unknown");
+          console.error("API Error:", error);
+          if (error.message === "rate_limit") {
+            throw new Error("The chatbot is experiencing high traffic. Please try again in a moment.");
+          } else if (error.message === "api_error") {
+            throw new Error("Service temporarily unavailable. Please try again later.");
+          } else if (error.message === "no_response") {
+            throw new Error("I didn't get a proper response. Please try again.");
+          } else {
+            throw new Error("Network error. Please check your connection.");
+          }
         }
       }
+
+      async function sendMessage() {
+        const inputField = document.getElementById("chatbot-input");
+        const userMessage = inputField.value.trim();
+        if (!userMessage) return;
+
+        // Clear input and append user message
+        inputField.value = "";
+        appendMessage("user", userMessage);
+
+        // Show loading indicator
+        const loadingId = appendLoadingMessage();
+
+        try {
+          const botReply = await getBotResponse(userMessage);
+          removeLoadingMessage(loadingId);
+          appendMessage("bot", botReply);
+        } catch (error) {
+          removeLoadingMessage(loadingId);
+          appendMessage("bot", error.message, true);
+        }
+      }
+
+      // ========== Initialize Event Listeners ==========
+      document.addEventListener("DOMContentLoaded", function () {
+        chatbotContainer = document.getElementById("chatbot-container");
+        closeBtn = document.getElementById("close-btn");
+        sendBtn = document.getElementById("send-btn");
+        chatBotInput = document.getElementById("chatbot-input");
+        chatbotIcon = document.getElementById("chatbot-icon");
+
+        // Open chat
+        chatbotIcon.addEventListener("click", () => {
+          chatbotContainer.classList.remove("hidden");
+          chatbotIcon.style.display = "none";
+        });
+
+        // Close chat
+        closeBtn.addEventListener("click", () => {
+          chatbotContainer.classList.add("hidden");
+          chatbotIcon.style.display = "flex";
+        });
+
+        // Send message on button click
+        sendBtn.addEventListener("click", sendMessage);
+
+        // Send message on Enter key
+        chatBotInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") sendMessage();
+        });
+      });
     </script>
   </body>
 </html>
